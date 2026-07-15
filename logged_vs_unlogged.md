@@ -1,4 +1,3 @@
-<img width="409" height="187" alt="Screenshot 2026-07-15 at 4 28 36 PM" src="https://github.com/user-attachments/assets/c1ba18c3-f110-41c1-bf64-c2a058326a02" /><img width="1158" height="474" alt="Screenshot 2026-07-15 at 4 27 27 PM" src="https://github.com/user-attachments/assets/962d497e-2340-4b60-99a5-cd7ccd326e52" /># PostgreSQL Performance Benchmark – LOGGED vs UNLOGGED Tables
 ---
 
 # Environment
@@ -302,6 +301,11 @@ WITH (
 Imports the same dataset into the UNLOGGED table.
 
 The import duration will later be compared with the LOGGED table.
+
+This step is used to measure:
+
+- Import Time
+- CPU Usage
 
 ### Screenshot
 
