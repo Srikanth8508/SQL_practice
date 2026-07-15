@@ -1,3 +1,5 @@
+# PostgreSQL Performance Benchmark – LOGGED vs UNLOGGED Tables
+
 ---
 
 # Environment
