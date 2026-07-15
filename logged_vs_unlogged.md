@@ -1,4 +1,4 @@
-# PostgreSQL Performance Benchmark – LOGGED vs UNLOGGED Tables
+<img width="409" height="187" alt="Screenshot 2026-07-15 at 4 28 36 PM" src="https://github.com/user-attachments/assets/c1ba18c3-f110-41c1-bf64-c2a058326a02" /><img width="1158" height="474" alt="Screenshot 2026-07-15 at 4 27 27 PM" src="https://github.com/user-attachments/assets/962d497e-2340-4b60-99a5-cd7ccd326e52" /># PostgreSQL Performance Benchmark – LOGGED vs UNLOGGED Tables
 ---
 
 # Environment
@@ -129,7 +129,45 @@ This step is used to measure:
 
 ---
 
-# Step 5 - Query Performance on LOGGED Table
+# Step 5 - Storage Size Comparison
+
+## Table Size
+
+```sql
+SELECT pg_size_pretty(
+    pg_relation_size('patents.patents_unlogged')
+) AS table_size;
+```
+
+### Description
+
+Displays the physical storage occupied by the table.
+
+### Screenshot
+<img width="400" height="200" alt="Screenshot 2026-07-15 at 4 28 29 PM" src="https://github.com/user-attachments/assets/4893072a-fd8d-46fe-844a-400a1c0a8cc5" />
+
+---
+
+## Index Size
+
+```sql
+SELECT pg_size_pretty(
+    pg_indexes_size('patents.patents_unlogged')
+) AS index_size;
+```
+
+### Description
+
+Displays the total disk space used by indexes.
+
+If no indexes exist, the size will be reported as 0 bytes.
+
+### Screenshot
+
+<img width="409" height="187" alt="Screenshot 2026-07-15 at 4 28 36 PM" src="https://github.com/user-attachments/assets/8345a38b-182d-4950-91e0-2d980430f7a5" />
+
+
+# Step 6 - Query Performance on LOGGED Table
 
 ## Query 1 - Primary Key Lookup
 
@@ -214,11 +252,12 @@ Useful for evaluating large text search performance.
 
 ### Screenshot
 
-> Add Screenshot Here
+<img width="1151" height="425" alt="Screenshot 2026-07-15 at 4 09 17 PM" src="https://github.com/user-attachments/assets/9d12ded3-e897-4fb0-8623-e616d3e7fd9c" />
+
 
 ---
 
-# Step 6 - Create UNLOGGED Table
+# Step 7 - Create UNLOGGED Table
 
 ```sql
 CREATE UNLOGGED TABLE patents.patents_unlogged (
@@ -236,11 +275,11 @@ These tables are not crash-safe and are automatically truncated after an unexpec
 
 ### Screenshot
 
-> Add Screenshot Here
+<img width="489" height="137" alt="Screenshot 2026-07-15 at 4 17 28 PM" src="https://github.com/user-attachments/assets/cbf2e44a-011f-49ae-bff4-c7eb926bcfc3" />
 
 ---
 
-# Step 7 - Import Data into UNLOGGED Table
+# Step 8 - Import Data into UNLOGGED Table
 
 ```sql
 COPY patents.patents_unlogged
@@ -266,11 +305,12 @@ The import duration will later be compared with the LOGGED table.
 
 ### Screenshot
 
-> Add Screenshot Here
+<img width="629" height="194" alt="Screenshot 2026-07-15 at 4 22 38 PM" src="https://github.com/user-attachments/assets/a8c51d1b-0fc6-4c4f-a197-bfe4c58bdb1a" />
+<img width="1920" height="563" alt="Screenshot 2026-07-15 at 4 19 02 PM" src="https://github.com/user-attachments/assets/2ab57c63-6d39-437b-a776-49d3e641309d" />
 
 ---
 
-# Step 8 - Storage Size Comparison
+# Step 9 - Storage Size Comparison
 
 ## Table Size
 
@@ -286,7 +326,7 @@ Displays the physical storage occupied by the table.
 
 ### Screenshot
 
-> Add Screenshot Here
+<img width="406" height="173" alt="Screenshot 2026-07-15 at 4 24 02 PM" src="https://github.com/user-attachments/assets/4e0ea48c-2c21-41e6-a30e-de25f37df30b" />
 
 ---
 
@@ -306,11 +346,11 @@ If no indexes exist, the size will be reported as 0 bytes.
 
 ### Screenshot
 
-> Add Screenshot Here
+<img width="389" height="189" alt="Screenshot 2026-07-15 at 4 24 09 PM" src="https://github.com/user-attachments/assets/f90a2874-61d6-4a1c-a46c-b0168a5b5048" />
 
 ---
 
-# Step 9 - Query Performance on UNLOGGED Table
+# Step 10 - Query Performance on UNLOGGED Table
 
 ## Query 1 - Primary Key Lookup
 
@@ -328,7 +368,7 @@ Measures lookup performance on the UNLOGGED table.
 
 ### Screenshot
 
-> Add Screenshot Here
+<img width="1129" height="469" alt="Screenshot 2026-07-15 at 4 26 59 PM" src="https://github.com/user-attachments/assets/01e8c0b4-306d-4bd7-ae91-1e08ca3a710d" />
 
 ---
 
@@ -348,7 +388,7 @@ Measures prefix search performance on the UNLOGGED table.
 
 ### Screenshot
 
-> Add Screenshot Here
+<img width="1146" height="497" alt="Screenshot 2026-07-15 at 4 27 08 PM" src="https://github.com/user-attachments/assets/10465812-29d3-4e65-8142-3746fa2fd690" />
 
 ---
 
@@ -368,7 +408,7 @@ Evaluates title search performance using a sequential scan.
 
 ### Screenshot
 
-> Add Screenshot Here
+<img width="1154" height="439" alt="Screenshot 2026-07-15 at 4 27 18 PM" src="https://github.com/user-attachments/assets/17576478-6abc-4e33-bdf8-95e6c53e1d0a" />
 
 ---
 
@@ -389,7 +429,7 @@ Evaluates abstract search performance on the UNLOGGED table.
 
 ### Screenshot
 
-> Add Screenshot Here
+<img width="1158" height="474" alt="Screenshot 2026-07-15 at 4 27 27 PM" src="https://github.com/user-attachments/assets/7730baab-2e83-46a4-a765-71fd3e829b1e" />
 
 ---
 
