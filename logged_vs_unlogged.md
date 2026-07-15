@@ -439,3 +439,22 @@ Evaluates abstract search performance on the UNLOGGED table.
 
 ---
 
+## Bulk Import Comparison
+
+| Metric | LOGGED Table | UNLOGGED Table |
+|---------|--------------:|---------------:|
+| Import Time | 184,233 ms (03:04.233) | 94,581 ms (01:34.581) |
+| Table Size | 8553 MB | 8553 MB |
+| Index Size | 0 Bytes | 0 Bytes |
+
+---
+
+## Query Performance Comparison
+
+| Query | LOGGED Table | UNLOGGED Table |
+|--------|-------------:|---------------:|
+| Primary Key Lookup | 658.971 ms | 778.772 ms |
+| Prefix Search | 654.421 ms | 701.606 ms |
+| Title Search | 637.243 ms | 533.351 ms |
+| Abstract Search | 1284.367 ms | 1297.304 ms |
+
