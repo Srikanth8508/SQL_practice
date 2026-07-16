@@ -136,7 +136,7 @@ This step is used to measure:
 
 ```sql
 SELECT pg_size_pretty(
-    pg_relation_size('patents.patents_unlogged')
+    pg_relation_size('patents.patents_logged')
 ) AS table_size;
 ```
 
@@ -153,7 +153,7 @@ Displays the physical storage occupied by the table.
 
 ```sql
 SELECT pg_size_pretty(
-    pg_indexes_size('patents.patents_unlogged')
+    pg_indexes_size('patents.patents_logged')
 ) AS index_size;
 ```
 
