@@ -56,9 +56,8 @@ ON patents.patents_idx (
 - During `COPY`, PostgreSQL updates the index for every inserted row, increasing write I/O and load time.
 - Displays table definition, columns, storage details and attached indexes.
 
-##Screenshot:
+ 
 <img width="944" height="649" alt="Screenshot 2026-07-16 at 6 24 31 PM" src="https://github.com/user-attachments/assets/6064ba6b-a297-4491-ad77-7d413038862d" />
-<img width="752" height="753" alt="Screenshot 2026-07-16 at 6 25 03 PM" src="https://github.com/user-attachments/assets/6443307f-bdd7-4a67-b11d-a09ce31db1f8" />
 
 ---
 
@@ -86,10 +85,10 @@ WITH (
 - Since the index already exists, every inserted row updates the index immediately.
 - This increases CPU usage, WAL generation and random disk writes compared to loading into an unindexed table.
 
-##Screenshot:
+ 
 
 <img width="692" height="448" alt="Screenshot 2026-07-16 at 6 43 44 PM" src="https://github.com/user-attachments/assets/36651fa6-77ba-4d4c-91de-683ca7791fc4" />
-
+<img width="752" height="753" alt="Screenshot 2026-07-16 at 6 25 03 PM" src="https://github.com/user-attachments/assets/6443307f-bdd7-4a67-b11d-a09ce31db1f8" />
 
 ---
 
@@ -105,7 +104,7 @@ SELECT pg_size_pretty(pg_relation_size('patents.patents_idx'));
 
 Returns only heap storage.
 
-##Screenshot:
+ 
 <img width="405" height="204" alt="Screenshot 2026-07-16 at 7 09 17 PM" src="https://github.com/user-attachments/assets/5a597e21-ab49-47c5-9606-4d2e50aba191" />
 
 
@@ -119,7 +118,7 @@ SELECT pg_size_pretty(pg_indexes_size('patents.patents_idx'));
 
 Returns total disk space consumed by all indexes.
 
-##Screenshot:** *(Attach here)*
+ 
 <img width="423" height="202" alt="Screenshot 2026-07-16 at 7 19 48 PM" src="https://github.com/user-attachments/assets/1392ddd2-fa11-4c0e-9b80-abb4aab658f8" />
 
 ---
@@ -149,7 +148,7 @@ WHERE publication_number = 'US-4081864-A';
 - Shared Buffers
 - Rows Removed by Filter
 
-##Screenshot:
+ 
 
 <img width="1086" height="452" alt="Screenshot 2026-07-16 at 6 44 03 PM" src="https://github.com/user-attachments/assets/5fa4273c-09bc-4561-8b34-7efb2cb48eb3" />
 
@@ -171,7 +170,7 @@ WHERE publication_number LIKE 'US-40818%';
 - The MD5 expression index cannot support prefix matching.
 - PostgreSQL scans the table and evaluates the LIKE predicate for every row.
 
-##Screenshot:
+ 
 
 <img width="1094" height="429" alt="Screenshot 2026-07-16 at 7 21 11 PM" src="https://github.com/user-attachments/assets/edab5b56-d334-4abe-8c3f-420b25cf69cb" />
 
@@ -192,7 +191,7 @@ WHERE title ILIKE '%helmet%';
 - PostgreSQL performs a Parallel Sequential Scan.
 - For production workloads, a GIN index with `pg_trgm` is recommended.
 
-##Screenshot:
+ 
 <img width="1088" height="427" alt="Screenshot 2026-07-16 at 7 21 21 PM" src="https://github.com/user-attachments/assets/d7af51c6-da6d-4ffd-9e56-d83f1135a786" />
 
 ---
@@ -211,7 +210,7 @@ WHERE abstract ILIKE '%water%';
 - Leading wildcard prevents B-tree index usage.
 - Large result sets increase execution time due to tuple retrieval.
 
-##Screenshot:
+ 
 <img width="1130" height="446" alt="Screenshot 2026-07-16 at 7 21 33 PM" src="https://github.com/user-attachments/assets/09ef6724-9375-4f9c-ab90-dc1e7f1fae2d" />
 
 ---
@@ -294,7 +293,7 @@ CREATE TABLE patents.patents_n_idx (
 - Creates a heap table identical to `patents_idx`.
 - No indexes exist at this stage, allowing PostgreSQL to insert rows without maintaining index structures.
 
-##Screenshot:** *(Attach here)*
+ ** *(Attach here)*
 
 ---
 
@@ -323,7 +322,7 @@ WITH (
 - No index maintenance occurs for each inserted row.
 - This is the recommended approach for loading very large datasets because it significantly reduces write amplification, WAL generation, CPU utilization, and random I/O.
 
-##Screenshot:** *(Attach here)*
+ ** *(Attach here)*
 
 ---
 
@@ -346,7 +345,7 @@ ON patents.patents_n_idx (
 - Index creation is generally much faster than maintaining the index during every row insertion.
 - The resulting index is identical to the one created in Scenario 1 but is built more efficiently.
 
-##Screenshot:** *(Attach here)*
+ ** *(Attach here)*
 
 ---
 
@@ -360,7 +359,7 @@ ON patents.patents_n_idx (
 
 Displays table definition, storage information, indexes, table size and additional metadata.
 
-##Screenshot:** *(Attach here)*
+ ** *(Attach here)*
 
 ---
 
@@ -378,7 +377,7 @@ SELECT pg_size_pretty(
 
 Returns the heap table size only.
 
-##Screenshot:** *(Attach here)*
+ ** *(Attach here)*
 
 ### Index Size
 
@@ -392,7 +391,7 @@ SELECT pg_size_pretty(
 
 Returns the total storage occupied by indexes.
 
-##Screenshot:** *(Attach here)*
+ ** *(Attach here)*
 
 ---
 
@@ -422,7 +421,7 @@ WHERE publication_number = 'US-4081864-A';
 - Shared Buffers: ~1.09 million pages read
 - Execution Time: **~5.47 seconds**
 
-##Screenshot:** *(Attach EXPLAIN output here)*
+ ** *(Attach EXPLAIN output here)*
 
 ---
 
@@ -447,7 +446,7 @@ WHERE publication_number LIKE 'US-40818%';
 - Execution Time: **~5.37 seconds**
 - High buffer reads indicate a full table scan.
 
-##Screenshot:** *(Attach here)*
+ ** *(Attach here)*
 
 ---
 
@@ -473,7 +472,7 @@ WHERE title ILIKE '%helmet%';
 - Rows Removed by Filter: ~9.45 million
 - Execution Time: **~6.22 seconds**
 
-##Screenshot:** *(Attach here)*
+ ** *(Attach here)*
 
 ---
 
@@ -499,7 +498,7 @@ WHERE abstract ILIKE '%water%';
 - Shared Buffers: ~1.09 million pages read
 - Execution Time: **~21.4 seconds**
 
-##Screenshot:** *(Attach here)*
+ ** *(Attach here)*
 
 ---
 
