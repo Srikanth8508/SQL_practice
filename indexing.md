@@ -215,67 +215,6 @@ WHERE abstract ILIKE '%water%';
 
 ---
 
-# Scenario 2 – Load First, Build Index Later
-
-(Repeat the same SQL statements for `patents_n_idx`.)
-
----
-
-# Analysis Notes (Based on EXPLAIN Output)
-
-The attached execution plan for `patents_n_idx` shows:
-
-## Exact Lookup
-- Planner selected **Parallel Sequential Scan**.
-- Approximately 9.45 million rows were scanned.
-- Over 1 million shared buffers were read.
-- Execution time ≈ **5.47 seconds**.
-
-## Prefix Search
-- Also performed a **Parallel Sequential Scan**.
-- MD5 expression index cannot satisfy `LIKE 'US-40818%'`.
-- Execution time ≈ **5.37 seconds**.
-
-## Title Search
-- `ILIKE '%helmet%'` resulted in a **Parallel Sequential Scan**.
-- Around 5,148 matching rows were returned.
-- Execution time ≈ **6.22 seconds**.
-
-## Abstract Search
-- Returned approximately **361,777 rows**.
-- Required scanning nearly the entire table.
-- Execution time ≈ **21.4 seconds** because of the high number of matching rows and tuple retrieval.
-
----
-
-# Important Observation
-
-Although an MD5 unique index exists, **none of the benchmark queries use it** because every query filters on original text columns (`publication_number`, `title`, or `abstract`) rather than on the indexed MD5 expression.
-
-The MD5 index is useful only for:
-- Duplicate detection
-- Enforcing uniqueness
-- Searching by the same MD5 expression
-
-It **does not** accelerate:
-- Equality search on `publication_number`
-- Prefix (`LIKE`) search
-- `ILIKE` text search
-- Full-text pattern matching
-
-To optimize these benchmark queries, consider:
-
-| Query | Recommended Index |
-|--------|-------------------|
-| publication_number = value | B-tree on publication_number |
-| publication_number LIKE 'ABC%' | B-tree with text_pattern_ops (or appropriate collation) |
-| title ILIKE '%helmet%' | GIN + pg_trgm |
-| abstract ILIKE '%water%' | GIN + pg_trgm |
-
-
-
----
-
 # Scenario 2 – Load Data First, Create Index Later
 
 ## Create Table
@@ -287,15 +226,6 @@ CREATE TABLE patents.patents_n_idx (
     abstract TEXT
 );
 ```
-
-**Technical Explanation**
-
-- Creates a heap table identical to `patents_idx`.
-- No indexes exist at this stage, allowing PostgreSQL to insert rows without maintaining index structures.
-
- ** *(Attach here)*
-
----
 
 ## Bulk Load
 
@@ -317,12 +247,15 @@ WITH (
 
 **Technical Explanation**
 
+- Creates a heap table identical to `patents_idx`.
+- No indexes exist at this stage, allowing PostgreSQL to insert rows without maintaining index structures.
 - Loads the entire dataset into a table without indexes.
 - PostgreSQL writes only heap pages during loading.
 - No index maintenance occurs for each inserted row.
 - This is the recommended approach for loading very large datasets because it significantly reduces write amplification, WAL generation, CPU utilization, and random I/O.
 
- ** *(Attach here)*
+<img width="492" height="539" alt="Screenshot 2026-07-16 at 7 32 52 PM" src="https://github.com/user-attachments/assets/42f5262d-18f8-4dbf-ad76-9310efb7f4f9" />
+
 
 ---
 
@@ -344,8 +277,8 @@ ON patents.patents_n_idx (
 - After the data load completes, PostgreSQL performs a single scan of the table and builds the index.
 - Index creation is generally much faster than maintaining the index during every row insertion.
 - The resulting index is identical to the one created in Scenario 1 but is built more efficiently.
-
- ** *(Attach here)*
+ 
+<img width="1177" height="642" alt="Screenshot 2026-07-16 at 7 42 39 PM" src="https://github.com/user-attachments/assets/5da2d79e-1863-4930-bb9b-543225dd9d07" />
 
 ---
 
@@ -359,7 +292,8 @@ ON patents.patents_n_idx (
 
 Displays table definition, storage information, indexes, table size and additional metadata.
 
- ** *(Attach here)*
+ <img width="1194" height="225" alt="Screenshot 2026-07-16 at 7 45 50 PM" src="https://github.com/user-attachments/assets/6b8455b8-b89c-4c87-b9de-bae7cf426f29" />
+
 
 ---
 
@@ -377,7 +311,8 @@ SELECT pg_size_pretty(
 
 Returns the heap table size only.
 
- ** *(Attach here)*
+ <img width="415" height="188" alt="Screenshot 2026-07-16 at 7 43 29 PM" src="https://github.com/user-attachments/assets/a22c35b2-6ea9-40d8-98b9-59c39e1234f5" />
+
 
 ### Index Size
 
@@ -391,7 +326,8 @@ SELECT pg_size_pretty(
 
 Returns the total storage occupied by indexes.
 
- ** *(Attach here)*
+<img width="411" height="208" alt="Screenshot 2026-07-16 at 7 43 35 PM" src="https://github.com/user-attachments/assets/777f8d8b-3e98-456d-b89c-3130d9606e28" />
+
 
 ---
 
@@ -421,8 +357,7 @@ WHERE publication_number = 'US-4081864-A';
 - Shared Buffers: ~1.09 million pages read
 - Execution Time: **~5.47 seconds**
 
- ** *(Attach EXPLAIN output here)*
-
+<img width="1088" height="467" alt="Screenshot 2026-07-16 at 7 45 12 PM" src="https://github.com/user-attachments/assets/206593c2-0074-4cb8-a7bc-c566731693c5" />
 ---
 
 ## 2. Prefix Search
@@ -446,7 +381,8 @@ WHERE publication_number LIKE 'US-40818%';
 - Execution Time: **~5.37 seconds**
 - High buffer reads indicate a full table scan.
 
- ** *(Attach here)*
+ <img width="1122" height="448" alt="Screenshot 2026-07-16 at 7 45 19 PM" src="https://github.com/user-attachments/assets/3a4610b0-3f94-4095-acfe-dc5c04fab1b2" />
+
 
 ---
 
@@ -472,7 +408,8 @@ WHERE title ILIKE '%helmet%';
 - Rows Removed by Filter: ~9.45 million
 - Execution Time: **~6.22 seconds**
 
- ** *(Attach here)*
+ <img width="1117" height="464" alt="Screenshot 2026-07-16 at 7 45 31 PM" src="https://github.com/user-attachments/assets/e8cb8707-d783-43b3-b6b5-fde93e0afa9c" />
+
 
 ---
 
@@ -498,7 +435,8 @@ WHERE abstract ILIKE '%water%';
 - Shared Buffers: ~1.09 million pages read
 - Execution Time: **~21.4 seconds**
 
- ** *(Attach here)*
+ 
+<img width="1160" height="450" alt="Screenshot 2026-07-16 at 7 45 42 PM" src="https://github.com/user-attachments/assets/d9022243-4f42-4b8f-8568-83b2b3ef7284" />
 
 ---
 
