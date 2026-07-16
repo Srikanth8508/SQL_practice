@@ -464,9 +464,5 @@ WHERE abstract ILIKE '%water%';
 - Creating the index **after** loading the data reduced the overall data loading time significantly.
 - Method 2 completed the **COPY + index creation** process in **84.52 seconds**, compared to **198.06 seconds** for Method 1, resulting in an overall improvement of approximately **57%**.
 - Bulk loading without maintaining an index for every inserted row minimizes random I/O, reduces WAL generation, and lowers CPU overhead.
-- The index created after loading occupied **533 MB**, whereas the index maintained during loading occupied **690 MB**, indicating a more compact index structure.
-- Query execution times for equality and pattern-matching searches were almost identical in both methods because the benchmark queries **did not use the MD5 expression index**.
-- All `EXPLAIN (ANALYZE, BUFFERS)` outputs selected a **Parallel Sequential Scan**, indicating that PostgreSQL determined a full table scan to be the most efficient execution plan for these predicates.
-- Since the benchmark queries filter on `publication_number`, `title`, and `abstract` instead of the indexed MD5 expression, the presence or absence of the MD5 index during loading had **no measurable impact on query execution performance**.
 - Method 2 is therefore the preferred approach for **large-scale bulk imports**, while Method 1 is more suitable for environments where data is inserted continuously and index maintenance during insertion is required.
 
