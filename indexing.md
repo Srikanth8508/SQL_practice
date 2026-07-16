@@ -440,3 +440,33 @@ WHERE abstract ILIKE '%water%';
 
 ---
 
+# Benchmark Comparison
+
+| Metric | Method 1 (Index Before COPY) | Method 2 (COPY Before Index) | Observation |
+|---------|-----------------------------:|-----------------------------:|-------------|
+| **Table Creation** | 14 ms | 6 ms | Nearly identical |
+| **COPY Time** | **198.06 sec (3m 18s)** | **63.98 sec (1m 04s)** | **Method 2 is ~3.1× faster** |
+| **Index Build Time** | Already exists | **20.54 sec** | Built after loading |
+| **Total Load + Index Time** | **198.06 sec** | **84.52 sec** | **Method 2 is ~57% faster overall** |
+| **Rows Loaded** | 9,458,171 | 9,458,171 | Same dataset |
+| **Table Size** | 8553 MB | 8553 MB | Identical |
+| **Index Size** | 690 MB | 533 MB | Method 2 created a more compact index |
+| **Equality Search** | 5.61 sec | 5.47 sec | Almost identical |
+| **Prefix LIKE Search** | 5.80 sec | 5.36 sec | Almost identical |
+| **`ILIKE '%helmet%'`** | 6.80 sec | 6.22 sec | Nearly identical |
+| **`ILIKE '%water%'`** | 22.03 sec | 21.41 sec | Nearly identical |
+| **Execution Plan** | Parallel Sequential Scan | Parallel Sequential Scan | Same planner decision |
+
+---
+
+## Key Observations
+
+- Creating the index **after** loading the data reduced the overall data loading time significantly.
+- Method 2 completed the **COPY + index creation** process in **84.52 seconds**, compared to **198.06 seconds** for Method 1, resulting in an overall improvement of approximately **57%**.
+- Bulk loading without maintaining an index for every inserted row minimizes random I/O, reduces WAL generation, and lowers CPU overhead.
+- The index created after loading occupied **533 MB**, whereas the index maintained during loading occupied **690 MB**, indicating a more compact index structure.
+- Query execution times for equality and pattern-matching searches were almost identical in both methods because the benchmark queries **did not use the MD5 expression index**.
+- All `EXPLAIN (ANALYZE, BUFFERS)` outputs selected a **Parallel Sequential Scan**, indicating that PostgreSQL determined a full table scan to be the most efficient execution plan for these predicates.
+- Since the benchmark queries filter on `publication_number`, `title`, and `abstract` instead of the indexed MD5 expression, the presence or absence of the MD5 index during loading had **no measurable impact on query execution performance**.
+- Method 2 is therefore the preferred approach for **large-scale bulk imports**, while Method 1 is more suitable for environments where data is inserted continuously and index maintenance during insertion is required.
+
