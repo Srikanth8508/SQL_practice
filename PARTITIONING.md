@@ -1,4 +1,4 @@
-<img width="447" height="527" alt="Screenshot 2026-07-16 at 11 40 29 AM" src="https://github.com/user-attachments/assets/f18be44d-0bd0-493c-b00d-ab6f238bd15e" /># PostgreSQL Partitioned Table Benchmark (HASH Partitioning)
+# PostgreSQL Partitioned Table Benchmark (HASH Partitioning)
 
 ---
 
