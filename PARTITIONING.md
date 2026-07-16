@@ -1,4 +1,4 @@
-# PostgreSQL Partitioned Table Benchmark (HASH Partitioning)
+<img width="447" height="527" alt="Screenshot 2026-07-16 at 11 40 29 AM" src="https://github.com/user-attachments/assets/f18be44d-0bd0-493c-b00d-ab6f238bd15e" /># PostgreSQL Partitioned Table Benchmark (HASH Partitioning)
 
 ---
 
@@ -38,8 +38,6 @@ FOR VALUES WITH (MODULUS 4, REMAINDER 3);
 This query creates a **partitioned parent table** using **HASH partitioning**.
 
 Instead of storing rows in a single table, PostgreSQL automatically distributes rows across four child partitions based on the hash value of the `publication_number`.
-
-### Technical Terms
 
 ### Parent Table
 The main logical table that users query.
@@ -134,9 +132,10 @@ Advantages
 
 ## Screenshot
 
-> **Add Screenshot Here**
->
-> *(Partition table creation output / `\d+ patents.patents_partitioned`)*
+<img width="447" height="527" alt="Screenshot 2026-07-16 at 11 40 29 AM" src="https://github.com/user-attachments/assets/92ba6657-e215-48c6-9ded-134b8967efd0" />
+
+<img width="935" height="228" alt="Screenshot 2026-07-16 at 11 40 40 AM" src="https://github.com/user-attachments/assets/c76adeee-c49a-4c7e-b25a-949c60e0e02f" />
+
 
 ---
 
@@ -233,10 +232,8 @@ No manual partition selection is required.
 ---
 
 ## Screenshot
+<img width="421" height="291" alt="Screenshot 2026-07-16 at 12 27 53 PM" src="https://github.com/user-attachments/assets/54ba143c-ae4b-4f2b-82f4-fef4b6aaea7c" />
 
-> **Add Screenshot Here**
->
-> *(COPY command output showing number of imported rows)*
 
 ---
 
@@ -333,9 +330,7 @@ This reduces CPU usage and execution time.
 
 ## Screenshot
 
-> **Add Screenshot Here**
->
-> *(Execution plan showing Partition Pruning)*
+<img width="1162" height="460" alt="Screenshot 2026-07-16 at 12 33 32 PM" src="https://github.com/user-attachments/assets/8809fe18-e7a8-42cf-a0ee-16061095a944" />
 
 ---
 
@@ -407,9 +402,8 @@ Pattern searches such as LIKE do not reveal the final hash value, so PostgreSQL 
 
 ## Screenshot
 
-> **Add Screenshot Here**
->
-> *(Execution plan for LIKE search)*
+<img width="1219" height="701" alt="Screenshot 2026-07-16 at 12 33 56 PM" src="https://github.com/user-attachments/assets/8c4e47c5-51d1-4cda-a1b4-e56c6b4961f2" />
+
 
 ---
 
@@ -476,9 +470,8 @@ This is efficient when most rows need to be examined.
 
 ## Screenshot
 
-> **Add Screenshot Here**
->
-> *(Execution plan for Title search)*
+<img width="1275" height="700" alt="Screenshot 2026-07-16 at 12 34 08 PM" src="https://github.com/user-attachments/assets/810c0edf-8e32-4b6c-b87a-2abc371d1e50" />
+
 
 ---
 
@@ -553,8 +546,7 @@ Without a supporting index, PostgreSQL reads every row to evaluate the search co
 
 ## Screenshot
 
-> **Add Screenshot Here**
->
-> *(Execution plan for Abstract search)*
+<img width="1260" height="682" alt="Screenshot 2026-07-16 at 12 34 18 PM" src="https://github.com/user-attachments/assets/e030aea6-9616-46e8-9a5a-0cd873c701ca" />
+
 
 ---
