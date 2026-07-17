@@ -49,8 +49,154 @@ This table stores the patent information used throughout the exercises.
 Populate the table with **1 million synthetic patent records**.
 
 ```sql
--- INSERT Query
--- (Paste the complete INSERT statement here)
+
+INSERT INTO patents.patents_training
+(
+    publication_number,
+    inventor_name,
+    publication_date,
+    title,
+    abstract
+)
+SELECT
+    'US' || LPAD(gs::text, 10, '0'),
+
+    'Inventor_' || LPAD((1 + floor(random() * 10000))::int::text, 5, '0'),
+
+    DATE '2010-01-01' + (random() * 5843)::int,
+
+    concat_ws(
+        ' ',
+        adjectives[(random()*19+1)::int],
+        technologies[(random()*19+1)::int],
+        actions[(random()*19+1)::int],
+        'for',
+        domains[(random()*19+1)::int],
+        'using',
+        technologies[(random()*19+1)::int],
+        connectors[(random()*19+1)::int],
+        features[(random()*19+1)::int],
+        architectures[(random()*19+1)::int],
+        'with',
+        benefits[(random()*19+1)::int],
+        qualities[(random()*19+1)::int],
+        'performance',
+        'and',
+        security[(random()*19+1)::int],
+        'based',
+        'system',
+        'architecture',
+        versions[(random()*19+1)::int]
+    ),
+
+    concat_ws(
+        ' ',
+        'This invention provides',
+        adjectives[(random()*19+1)::int],
+        technologies[(random()*19+1)::int],
+        'for',
+        domains[(random()*19+1)::int],
+        'using',
+        architectures[(random()*19+1)::int],
+        'to improve',
+        benefits[(random()*19+1)::int],
+        'performance, scalability, availability and security.'
+    )
+
+FROM generate_series(1,1000000) gs
+
+CROSS JOIN
+(
+SELECT
+
+ARRAY[
+'Machine','Cloud','Distributed','Neural','Artificial',
+'Quantum','Blockchain','Battery','Electric','Medical',
+'Image','Wireless','Sensor','Edge','Cyber',
+'Speech','Network','Autonomous','Virtual','Digital'
+] technologies,
+
+ARRAY[
+'System','Method','Framework','Architecture','Platform',
+'Engine','Application','Solution','Algorithm','Model',
+'Protocol','Mechanism','Workflow','Service','Module',
+'Controller','Interface','Process','Device','Analytics'
+] actions,
+
+ARRAY[
+'Healthcare','Manufacturing','Finance','Retail',
+'Agriculture','Education','Automotive','IoT',
+'Cloud','Robotics','Satellite','Security',
+'Telecommunication','Energy','Payments',
+'Logistics','SupplyChain','Medical','SmartCity','Defence'
+] domains,
+
+ARRAY[
+'advanced','intelligent','scalable','distributed',
+'secure','adaptive','dynamic','predictive',
+'robust','optimized','highspeed','cloudnative',
+'autonomous','wireless','efficient','reliable',
+'virtualized','parallel','automated','flexible'
+] adjectives,
+
+ARRAY[
+'through','via','leveraging','utilizing',
+'combining','integrating','supporting','enabling',
+'optimizing','processing','executing','monitoring',
+'controlling','managing','analyzing','predicting',
+'detecting','improving','accelerating','transforming'
+] connectors,
+
+ARRAY[
+'realtime','streaming','analytics','monitoring',
+'optimization','automation','processing','storage',
+'routing','prediction','classification','compression',
+'authentication','authorization','encryption','synchronization',
+'visualization','coordination','diagnostics','recovery'
+] features,
+
+ARRAY[
+'framework','architecture','pipeline','database',
+'cluster','engine','platform','gateway',
+'controller','scheduler','processor','interface',
+'network','application','repository','cache',
+'queue','service','module','workflow'
+] architectures,
+
+ARRAY[
+'high','better','enhanced','maximum',
+'greater','improved','efficient','fast',
+'optimized','reliable','stable','consistent',
+'predictable','secure','scalable','flexible',
+'faulttolerant','continuous','intelligent','dynamic'
+] benefits,
+
+ARRAY[
+'overall','operational','computational','system',
+'business','enterprise','network','application',
+'resource','processing','storage','service',
+'cloud','database','transaction','runtime',
+'deployment','production','execution','workflow'
+] qualities,
+
+ARRAY[
+'protection','encryption','authentication','validation',
+'authorization','monitoring','verification','integrity',
+'privacy','compliance','governance','availability',
+'confidentiality','resilience','isolation','backup',
+'auditing','detection','prevention','recovery'
+] security,
+
+ARRAY[
+'v1','v2','v3','generation',
+'nextgeneration','release','edition','model',
+'series','prototype','variant','revision',
+'phase1','phase2','phase3','alpha',
+'beta','gamma','enterprise','premium'
+] versions
+
+) x;
+
 ```
 
 *(Use the INSERT statement provided in the exercise.)*
