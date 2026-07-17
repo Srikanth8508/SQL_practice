@@ -40,7 +40,6 @@ This table stores the patent information used throughout the exercises.
 
 ### Screenshot
 
-> **Insert Screenshot Here**
 
 ---
 
@@ -212,9 +211,6 @@ ARRAY[
 
 ---
 
-### Screenshot
-
-> **Insert Screenshot Here**
 
 ---
 
@@ -245,9 +241,7 @@ INSERT INTO patents.inventor_master(inventor_name)
 
 SELECT DISTINCT
        TRIM(inventor_name)
-
 FROM patents.patents_training
-
 WHERE inventor_name IS NOT NULL
 AND TRIM(inventor_name) <> '';
 ```
@@ -273,7 +267,8 @@ ON patents.inventor_master(inventor_name);
 
 ### Screenshot
 
-> **Insert Screenshot Here**
+<img width="375" height="398" alt="Screenshot 2026-07-17 at 12 09 54 PM" src="https://github.com/user-attachments/assets/122c2a95-63da-478d-94da-7cbb8541931d" />
+
 
 ---
 
@@ -366,7 +361,9 @@ LIMIT 50;
 
 ### Screenshot
 
-> **Insert Screenshot Here**
+<img width="559" height="755" alt="Screenshot 2026-07-17 at 12 13 01 PM" src="https://github.com/user-attachments/assets/3764043d-5d17-42e7-85b7-dd60cc7f3595" />
+
+<img width="300" height="968" alt="Screenshot 2026-07-17 at 12 15 07 PM" src="https://github.com/user-attachments/assets/ce9a8bf1-df43-4a29-9e73-a4e6c70fef77" />
 
 ---
 
@@ -380,21 +377,14 @@ Find patents whose titles do **not contain** any of the Top 100 frequent words.
 
 ```sql
 SELECT *
-
 FROM patents.patents_training p
-
 WHERE NOT EXISTS
 (
     SELECT 1
-
     FROM patents.title_word_frequency t
-
     WHERE lower(p.title) ~
-
     ('(^|[^a-z0-9])' ||
-
      t.word ||
-
      '([^a-z0-9]|$)')
 );
 ```
@@ -412,7 +402,7 @@ WHERE NOT EXISTS
 
 ### Screenshot
 
-> **Insert Screenshot Here**
+<img width="473" height="262" alt="Screenshot 2026-07-17 at 12 35 39 PM" src="https://github.com/user-attachments/assets/af7476c5-98a5-42c6-95dd-978301563fc9" />
 
 ---
 
@@ -424,55 +414,34 @@ Analyze publication trends over the years.
 
 ---
 
-## Patent Count by Year
+## Patent Count by Year & Highest Patent Publication Year
 
 ```sql
 SELECT
-
     EXTRACT(YEAR FROM publication_date)::INT AS year,
-
     COUNT(*) AS patent_count
-
 FROM patents.patents_training
-
 GROUP BY year
-
 ORDER BY patent_count DESC
-
 LIMIT 10;
-```
 
----
 
-### Screenshot
-
-> **Insert Screenshot Here**
-
----
-
-## Highest Patent Publication Year
-
-```sql
 SELECT
-
     EXTRACT(YEAR FROM publication_date)::INT AS year,
-
     COUNT(*) AS patent_count
-
 FROM patents.patents_training
-
 GROUP BY year
-
 ORDER BY patent_count DESC
-
 LIMIT 1;
+
+
 ```
 
 ---
 
 ### Screenshot
 
-> **Insert Screenshot Here**
+<img width="495" height="616" alt="Screenshot 2026-07-17 at 12 42 01 PM" src="https://github.com/user-attachments/assets/0354984c-76d6-4da4-89bf-c16722b1ac41" />
 
 ---
 
@@ -557,11 +526,11 @@ ORDER BY year;
 
 ### Screenshot
 
-> **Insert Screenshot Here**
+<img width="487" height="1021" alt="Screenshot 2026-07-17 at 12 42 09 PM" src="https://github.com/user-attachments/assets/150f6e26-d4a4-49ac-a97a-8fa9cbb9bbd5" />
 
 ---
 
-# 7. Performance Optimization
+# 7. Performance Optimization & Functional GIN Index on Title
 
 ## Objective
 
@@ -574,6 +543,17 @@ Improve query performance using indexes.
 ```sql
 CREATE INDEX idx_patent_date
 ON patents.patents_training(publication_date);
+
+CREATE INDEX idx_lower_title
+ON patents.patents_training
+USING gin
+(
+    to_tsvector('simple', lower(title))
+);
+
+ANALYZE patents.patents_training;
+
+
 ```
 
 ---
@@ -581,60 +561,14 @@ ON patents.patents_training(publication_date);
 ### Purpose
 
 Improves filtering by publication date.
-
----
-
-### Screenshot
-
-> **Insert Screenshot Here**
-
----
-
-## Functional GIN Index on Title
-
-```sql
-CREATE INDEX idx_lower_title
-
-ON patents.patents_training
-
-USING gin
-
-(
-    to_tsvector('simple', lower(title))
-);
-```
-
----
-
-### Purpose
-
 Optimizes full-text search on patent titles.
-
----
-
-### Screenshot
-
-> **Insert Screenshot Here**
-
----
-
-## Update Statistics
-
-```sql
-ANALYZE patents.patents_training;
-```
-
----
-
-### Purpose
-
 Refresh planner statistics for better execution plans.
 
 ---
 
 ### Screenshot
 
-> **Insert Screenshot Here**
+<img width="351" height="267" alt="Screenshot 2026-07-17 at 4 49 07 PM" src="https://github.com/user-attachments/assets/717aa195-2b28-4dfe-830e-6ca85e4c7e4e" />
 
 ---
 
@@ -650,19 +584,15 @@ Use `EXPLAIN ANALYZE` to compare execution plans.
 EXPLAIN ANALYZE
 
 SELECT
-
     EXTRACT(YEAR FROM publication_date),
-
     COUNT(*)
-
 FROM patents.patents_training
-
 GROUP BY 1;
 ```
 
 ### Screenshot
 
-> **Insert Screenshot Here**
+<img width="1317" height="486" alt="Screenshot 2026-07-17 at 4 50 10 PM" src="https://github.com/user-attachments/assets/a52d698f-0d10-47db-abf4-8a06acd2f080" />
 
 ---
 
@@ -672,15 +602,13 @@ GROUP BY 1;
 EXPLAIN ANALYZE
 
 SELECT *
-
 FROM patents.patents_training
-
 WHERE publication_date >= DATE '2020-01-01';
 ```
 
 ### Screenshot
 
-> **Insert Screenshot Here**
+<img width="981" height="314" alt="Screenshot 2026-07-17 at 4 50 17 PM" src="https://github.com/user-attachments/assets/e854737e-a181-41c4-8f34-d0eae19f7b5b" />
 
 ---
 
@@ -690,19 +618,15 @@ WHERE publication_date >= DATE '2020-01-01';
 EXPLAIN ANALYZE
 
 SELECT *
-
 FROM patents.patents_training
-
 WHERE publication_date
-
 BETWEEN '2020-01-01'
-
 AND '2020-12-31';
 ```
 
 ### Screenshot
 
-> **Insert Screenshot Here**
+<img width="963" height="323" alt="Screenshot 2026-07-17 at 5 01 50 PM" src="https://github.com/user-attachments/assets/63d9e329-64b1-4a4e-afb7-64225265a242" />
 
 ---
 
@@ -712,15 +636,13 @@ AND '2020-12-31';
 EXPLAIN ANALYZE
 
 SELECT *
-
 FROM patents.patents_training
-
 WHERE title LIKE '%battery%';
 ```
 
 ### Screenshot
 
-> **Insert Screenshot Here**
+<img width="960" height="311" alt="Screenshot 2026-07-17 at 5 02 03 PM" src="https://github.com/user-attachments/assets/cd15e9f4-3bf4-4dd4-8f91-53837dcfe7c2" />
 
 ---
 
@@ -730,18 +652,14 @@ WHERE title LIKE '%battery%';
 EXPLAIN ANALYZE
 
 SELECT
-
     COUNT(*),
-
     MIN(publication_date),
-
     MAX(publication_date)
-
 FROM patents.patents_training;
 ```
 
 ### Screenshot
 
-> **Insert Screenshot Here**
+<img width="1264" height="351" alt="Screenshot 2026-07-17 at 5 02 12 PM" src="https://github.com/user-attachments/assets/49dc8a2a-df98-4c70-8f24-fbb64739c14f" />
 
 ---
