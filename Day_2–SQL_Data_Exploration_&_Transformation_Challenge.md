@@ -452,63 +452,36 @@ WITH yearly
 AS
 (
     SELECT
-
         EXTRACT(YEAR FROM publication_date)::INT AS year,
-
         COUNT(*) AS patent_count
-
     FROM patents.patents_training
-
     GROUP BY year
 )
 
 SELECT
-
     year,
-
     patent_count,
-
     LAG(patent_count)
-
     OVER (ORDER BY year)
-
     AS previous_year,
-
     ROUND
     (
-
         (
-
             patent_count -
-
             LAG(patent_count)
-
             OVER (ORDER BY year)
-
         )
-
         *100.0
-
         /
-
         NULLIF
-
         (
-
             LAG(patent_count)
-
             OVER (ORDER BY year),
-
             0
-
         ),
-
         2
-
     ) AS growth_percentage
-
 FROM yearly
-
 ORDER BY year;
 ```
 
