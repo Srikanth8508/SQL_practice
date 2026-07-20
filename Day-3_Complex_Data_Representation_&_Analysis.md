@@ -1,27 +1,21 @@
 # PostgreSQL Arrays and JSONB - Technical Documentation
 
-## Objective
+The following tasks demonstrate how PostgreSQL supports complex data types such as **ARRAY** and **JSONB** for storing, querying, and optimizing semi-structured and multi-valued data.
 
-This lab demonstrates advanced PostgreSQL features including:
-
-- ARRAY data type
-- ARRAY functions and operators
-- GIN indexes on arrays
-- JSONB storage and querying
-- JSONB updates
-- Aggregation using ARRAY_AGG and JSONB_AGG
-- Performance comparison using EXPLAIN ANALYZE
-
----
-
-# Environment
-
-| Component | Value |
-|-----------|-------|
-| Database | PostgreSQL |
-| Schema | patents |
-| Source Table | patents_training |
-| Inventor Table | inventor_master |
+| Task | Requirement | PostgreSQL Feature |
+|------|-------------|--------------------|
+| **Task 1** | Create a representation where each patent contains all its associated inventor names together in a single field. | **ARRAY** (`ARRAY_AGG()`) |
+| **Task 2** | Find patents where a specific inventor is associated with the patent. | **ARRAY Search** (`@>`, `ANY`) |
+| **Task 3** | Find patents where at least one inventor from a given list is associated with the patent. | **ARRAY Overlap Operator** (`&&`) |
+| **Task 4** | Find two patents that have at least one inventor in common. | **ARRAY Intersection** (`&&` between two arrays) |
+| **Task 5** | Convert the grouped inventor information back into individual rows and verify that the result matches the original inventor-to-patent relationships. | **UNNEST()** |
+| **Task 6** | Store structured patent metadata containing fields such as country, category, status, technology area, and filing date within a single column. | **JSONB**, `jsonb_build_object()` |
+| **Task 7** | Query and filter patents based on individual attributes stored within the JSONB metadata. | **JSONB Operators** (`->`, `->>`, `@>`, `?`) |
+| **Task 8** | Modify individual attributes inside a JSONB document without replacing the entire object. | **JSONB Update** (`jsonb_set()`) |
+| **Task 9** | Generate a structured JSON document for each patent containing patent details and all associated inventors. | **JSON/JSONB Generation** (`jsonb_agg()`, `jsonb_build_object()`) |
+| **Task 10** | Generate a hierarchical JSON structure showing **Year → Patents → Patent Details → Inventors**. | **Nested JSON** (`jsonb_build_object()`, `jsonb_agg()`) |
+| **Task 11** | Analyze query performance before and after indexing, and compare execution plans. | **GIN Indexes**, **Expression Indexes**, **EXPLAIN ANALYZE** |
+| **Task 12** | Research and demonstrate additional PostgreSQL operations supported for ARRAY and JSONB data types. | Advanced **ARRAY** and **JSONB** Functions & Operators |
 
 ---
 
