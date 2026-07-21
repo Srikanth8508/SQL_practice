@@ -35,7 +35,7 @@ CREATE TABLE patents.patent_inventors
 
 ### Screenshot
 
-> **Add Screenshot Here**
+<img width="399" height="166" alt="Screenshot 2026-07-21 at 4 04 27 PM" src="https://github.com/user-attachments/assets/4dfc4738-7be7-4d03-89e5-8c71255a737e" />
 
 ---
 
@@ -73,7 +73,7 @@ CROSS JOIN LATERAL
 
 ### Screenshot
 
-> **Add Screenshot Here**
+<img width="382" height="485" alt="Screenshot 2026-07-21 at 4 05 14 PM" src="https://github.com/user-attachments/assets/4ffa197c-82a5-4fed-8e3d-bccdbeb56181" />
 
 ---
 
@@ -93,7 +93,7 @@ GROUP BY publication_number;
 
 ### Screenshot
 
-> **Add Screenshot Here**
+<img width="474" height="212" alt="Screenshot 2026-07-21 at 4 05 47 PM" src="https://github.com/user-attachments/assets/499ee256-dc61-4eff-878b-0b29f6ecfe00" />
 
 ---
 
@@ -109,7 +109,7 @@ WHERE inventors @> ARRAY['Inventor_00467'];
 
 ### Screenshot
 
-> **Add Screenshot Here**
+<img width="969" height="325" alt="Screenshot 2026-07-21 at 4 06 00 PM" src="https://github.com/user-attachments/assets/2b86cd93-4316-4e58-bc60-cf32bb918d20" />
 
 ---
 
@@ -123,7 +123,7 @@ USING GIN(inventors);
 
 ### Screenshot
 
-> **Add Screenshot Here**
+<img width="301" height="115" alt="Screenshot 2026-07-21 at 4 06 17 PM" src="https://github.com/user-attachments/assets/74fd37b4-d4d1-40f3-94b4-b7106b15a5a7" />
 
 ---
 
@@ -138,8 +138,7 @@ WHERE inventors @> ARRAY['Inventor_00467'];
 ```
 
 ### Screenshot
-
-> **Add Screenshot Here**
+<img width="909" height="309" alt="Screenshot 2026-07-21 at 4 06 49 PM" src="https://github.com/user-attachments/assets/820e9d15-b2a0-4b16-9bbb-ec61ec5f9d93" />
 
 ---
 
@@ -148,7 +147,8 @@ WHERE inventors @> ARRAY['Inventor_00467'];
 ```sql
 SELECT *
 FROM patents.patent_inventor_array
-WHERE inventors @> ARRAY['Inventor_00467'];
+WHERE inventors @> ARRAY['Inventor_00467']
+LIMIT 20 ;
 ```
 
 ### Explanation
@@ -157,7 +157,7 @@ WHERE inventors @> ARRAY['Inventor_00467'];
 
 ### Screenshot
 
-> **Add Screenshot Here**
+<img width="501" height="504" alt="Screenshot 2026-07-21 at 4 07 53 PM" src="https://github.com/user-attachments/assets/aac44fa3-ac33-48d1-acbd-2618539f538c" />
 
 ---
 
@@ -180,7 +180,7 @@ WHERE inventors && ARRAY
 
 ### Screenshot
 
-> **Add Screenshot Here**
+<img width="619" height="591" alt="Screenshot 2026-07-21 at 4 08 39 PM" src="https://github.com/user-attachments/assets/9731a9e0-2ea0-45c2-ab87-d841ba6c387f" />
 
 ---
 
@@ -216,7 +216,7 @@ AND p1.publication_number < p2.publication_number;
 
 ### Screenshot
 
-> **Add Screenshot Here**
+<img width="397" height="567" alt="Screenshot 2026-07-21 at 4 09 08 PM" src="https://github.com/user-attachments/assets/c79bbf59-0dfd-4f8d-831c-94861f6f0a2c" />
 
 ---
 
@@ -244,34 +244,11 @@ If no rows are returned, both datasets are identical.
 
 ### Screenshot
 
-> **Add Screenshot Here**
+<img width="316" height="312" alt="Screenshot 2026-07-21 at 4 09 48 PM" src="https://github.com/user-attachments/assets/50d230c1-d720-475a-b267-2e553599c550" />
 
 ---
 
 # Task 6 - Create JSONB Metadata
-
-```sql
-CREATE TABLE patents.patent_metadata AS
-
-SELECT
-    publication_number,
-    jsonb_build_object
-    (
-        'country','US',
-        'category','Mechanical',
-        'status','Granted',
-        'technology','AI',
-        'filing_date','2023-01-01'
-    ) AS metadata
-
-FROM patents_training;
-```
-
-### Screenshot
-
-> **Add Screenshot Here**
-
-## (OR)
 
 ```sql
 CREATE TABLE patents.patent_metadata AS
@@ -292,6 +269,9 @@ SELECT
     ) AS metadata
 FROM patents_training;
 ```
+### Screenshot
+
+<img width="577" height="340" alt="Screenshot 2026-07-21 at 4 10 51 PM" src="https://github.com/user-attachments/assets/4c70ce3f-09f6-4410-8021-f60cdb5722fb" />
 
 ---
 
@@ -307,7 +287,7 @@ WHERE metadata->>'technology'='AI';
 
 ### Screenshot
 
-> **Add Screenshot Here**
+<img width="958" height="326" alt="Screenshot 2026-07-21 at 4 10 59 PM" src="https://github.com/user-attachments/assets/d5c80ba2-413f-47dd-b33e-4bd0062c3752" />
 
 ---
 
@@ -321,7 +301,7 @@ USING GIN(metadata);
 
 ### Screenshot
 
-> **Add Screenshot Here**
+<img width="270" height="132" alt="Screenshot 2026-07-21 at 4 11 24 PM" src="https://github.com/user-attachments/assets/3a377314-7999-42ec-b0d6-81139ae2d8c7" />
 
 ---
 
@@ -337,7 +317,7 @@ WHERE metadata->>'technology'='AI';
 
 ### Screenshot
 
-> **Add Screenshot Here**
+<img width="962" height="323" alt="Screenshot 2026-07-21 at 4 11 46 PM" src="https://github.com/user-attachments/assets/797c20c9-444d-4aad-b323-9780500ff382" />
 
 ---
 
@@ -350,23 +330,17 @@ SELECT COUNT(*)
 FROM patents.patent_metadata
 WHERE metadata->>'country'='US';
 ```
-
-```sql
-SELECT *
-FROM patents.patent_metadata
-WHERE metadata->>'country'='US'
-LIMIT 20;
-```
-
 ---
 
 ## Technology
 
 ```sql
-SELECT *
+SELECT COUNT(*)
 FROM patents.patent_metadata
 WHERE metadata->>'technology'='AI';
 ```
+
+<img width="272" height="184" alt="Screenshot 2026-07-21 at 4 12 49 PM" src="https://github.com/user-attachments/assets/7c5f1edd-d4ae-4f5e-b10a-8aa091a3ddc7" />
 
 ---
 
@@ -406,7 +380,8 @@ WHERE publication_number='US0000000001';
 
 ### Screenshot
 
-> **Add Screenshot Here**
+<img width="1048" height="484" alt="Screenshot 2026-07-21 at 4 16 38 PM" src="https://github.com/user-attachments/assets/e447f35a-98d5-4e4d-8864-1d2efad3d60e" />
+
 
 ---
 
@@ -428,7 +403,7 @@ LIMIT 20;
 
 ### Screenshot
 
-> **Add Screenshot Here**
+<img width="1407" height="551" alt="Screenshot 2026-07-21 at 4 17 49 PM" src="https://github.com/user-attachments/assets/d1e27f6d-3926-4ce1-8cef-75053319cab9" />
 
 ---
 
@@ -481,43 +456,11 @@ EXTRACT(YEAR FROM publication_date);
 
 ### Screenshot
 
-> **Add Screenshot Here**
+<img width="1917" height="858" alt="Screenshot 2026-07-21 at 4 18 19 PM" src="https://github.com/user-attachments/assets/5f106b11-1fa4-4256-a03d-125ed49e4ee9" />
 
 ---
 
-# Task 11 - Performance Comparison
-
-Run **EXPLAIN ANALYZE** before and after creating indexes.
-
-Example:
-
-```sql
-EXPLAIN ANALYZE
-
-SELECT *
-FROM patents.patent_inventor_array
-WHERE inventors @> ARRAY['Inventor_00467'];
-```
-
-```sql
-EXPLAIN ANALYZE
-
-SELECT *
-FROM patents.patent_metadata
-WHERE metadata->>'technology'='AI';
-```
-
-### Screenshot Before Index
-
-> **Add Screenshot Here**
-
-### Screenshot After Index
-
-> **Add Screenshot Here**
-
----
-
-# Task 12 - ARRAY Functions
+# Task 11 - ARRAY Functions
 
 ---
 
@@ -534,7 +477,7 @@ WHERE inventors @> ARRAY['Inventor_09348'];
 
 ### Screenshot
 
-> **Add Screenshot Here**
+<img width="769" height="396" alt="Screenshot 2026-07-21 at 4 19 23 PM" src="https://github.com/user-attachments/assets/ce42cfd9-bee1-4a5d-8c05-e56135a27494" />
 
 ---
 
@@ -552,7 +495,8 @@ LIMIT 10;
 
 ### Screenshot
 
-> **Add Screenshot Here**
+<img width="726" height="372" alt="Screenshot 2026-07-21 at 4 19 41 PM" src="https://github.com/user-attachments/assets/05fb7214-7e3d-46fe-8b8c-30d551bb618c" />
+
 
 ---
 
@@ -569,7 +513,7 @@ WHERE publication_number='US0000001133';
 
 ### Screenshot
 
-> **Add Screenshot Here**
+<img width="1163" height="229" alt="Screenshot 2026-07-21 at 4 20 07 PM" src="https://github.com/user-attachments/assets/2a47b6e8-cac0-42d1-b74d-d37057240d5e" />
 
 ---
 
@@ -586,7 +530,7 @@ WHERE publication_number='US0000001136';
 
 ### Screenshot
 
-> **Add Screenshot Here**
+<img width="883" height="232" alt="Screenshot 2026-07-21 at 4 20 25 PM" src="https://github.com/user-attachments/assets/066266b8-af03-4d89-b7a1-14dff5c2aecc" />
 
 ---
 
@@ -603,7 +547,7 @@ LIMIT 10;
 
 ### Screenshot
 
-> **Add Screenshot Here**
+<img width="445" height="361" alt="Screenshot 2026-07-21 at 4 20 49 PM" src="https://github.com/user-attachments/assets/bc8d1914-e876-4892-a69b-bf7304d0ffbf" />
 
 ---
 
@@ -619,19 +563,6 @@ WHERE 'Inventor_09915'=ANY(inventors);
 
 ### Screenshot
 
-> **Add Screenshot Here**
+<img width="629" height="376" alt="Screenshot 2026-07-21 at 4 21 23 PM" src="https://github.com/user-attachments/assets/42b611a1-225a-4957-900f-af53fa4ea0f4" />
 
 ---
-
-# Conclusion
-
-This exercise demonstrates:
-
-- Efficient storage of one-to-many relationships using ARRAY
-- Searching arrays with GIN indexes
-- JSONB document creation and querying
-- Updating JSONB values
-- Nested JSON generation
-- ARRAY utility functions
-- Performance optimization using EXPLAIN ANALYZE
-- Comparison of execution plans before and after indexing
