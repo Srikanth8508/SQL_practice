@@ -326,7 +326,7 @@ WHERE metadata->>'technology'='AI';
 ## Country(jsonb)
 
 ```sql
-SELECT COUNT(*)
+SELECT *
 FROM patents.patent_metadata
 WHERE metadata->>'country'='US';
 ```
@@ -348,7 +348,7 @@ LIMIT 20 ;
 ## Technology
 
 ```sql
-SELECT COUNT(*)
+SELECT *
 FROM patents.patent_metadata
 WHERE metadata->>'technology'='AI';
 ```
