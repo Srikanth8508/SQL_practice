@@ -14,8 +14,7 @@ The following tasks demonstrate how PostgreSQL supports complex data types such 
 | **Task 8** | Modify individual attributes inside a JSONB document without replacing the entire object. | **JSONB Update** (`jsonb_set()`) |
 | **Task 9** | Generate a structured JSON document for each patent containing patent details and all associated inventors. | **JSON/JSONB Generation** (`jsonb_agg()`, `jsonb_build_object()`) |
 | **Task 10** | Generate a hierarchical JSON structure showing **Year → Patents → Patent Details → Inventors**. | **Nested JSON** (`jsonb_build_object()`, `jsonb_agg()`) |
-| **Task 11** | Analyze query performance before and after indexing, and compare execution plans. | **GIN Indexes**, **Expression Indexes**, **EXPLAIN ANALYZE** |
-| **Task 12** | Research and demonstrate additional PostgreSQL operations supported for ARRAY and JSONB data types. | Advanced **ARRAY** and **JSONB** Functions & Operators |
+| **Task 11** | Research and demonstrate additional PostgreSQL operations supported for ARRAY and JSONB data types. | Advanced **ARRAY** and **JSONB** Functions & Operators |
 
 ---
 
