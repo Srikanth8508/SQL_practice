@@ -271,6 +271,26 @@ FROM patents_training;
 
 > **Add Screenshot Here**
 
+##(OR)
+
+```sql
+SELECT
+    publication_number,
+    jsonb_build_object(
+        'country',
+            (ARRAY['US','JP','DE','IN'])[floor(random()*4)+1],
+        'category',
+            (ARRAY['Mechanical','Electronics','Chemical'])[floor(random()*3)+1],
+        'status',
+            (ARRAY['Granted','Pending'])[floor(random()*2)+1],
+        'technology',
+            (ARRAY['AI','IoT','Robotics'])[floor(random()*3)+1],
+        'filing_date',
+            CURRENT_DATE - (random()*1000)::int
+    ) AS metadata
+FROM patents_training;
+```
+
 ---
 
 # Performance Test Before JSONB Index
