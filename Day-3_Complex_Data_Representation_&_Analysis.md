@@ -330,6 +330,8 @@ SELECT COUNT(*)
 FROM patents.patent_metadata
 WHERE metadata->>'country'='US';
 ```
+<img width="1057" height="509" alt="Screenshot 2026-07-21 at 8 14 07 PM" src="https://github.com/user-attachments/assets/7009ccea-aa9a-4a09-92b9-61dfa624d350" />
+
 ---
 
 ## Technology
@@ -354,7 +356,7 @@ WHERE metadata->>'status'='Granted';
 
 ### Screenshot
 
-> **Add Screenshot Here**
+<img width="1053" height="499" alt="Screenshot 2026-07-21 at 8 15 55 PM" src="https://github.com/user-attachments/assets/4a8792b2-ca55-42dd-af2b-d0e25a2504c1" />
 
 ---
 
