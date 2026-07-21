@@ -360,9 +360,9 @@ WHERE metadata->>'status'='Granted';
 # Task 8 - Update JSONB
 
 ```sql
-SELECT publication_number
-FROM patents_training
-LIMIT 10;
+SELECT * 
+FROM patent_metadata
+WHERE publication_number='US0000000001'; 
 ```
 
 ```sql
