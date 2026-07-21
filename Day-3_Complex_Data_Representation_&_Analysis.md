@@ -271,9 +271,11 @@ FROM patents_training;
 
 > **Add Screenshot Here**
 
-##(OR)
+## (OR)
 
 ```sql
+CREATE TABLE patents.patent_metadata AS
+
 SELECT
     publication_number,
     jsonb_build_object(
