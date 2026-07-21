@@ -323,7 +323,7 @@ WHERE metadata->>'technology'='AI';
 
 # Task 7 - Query JSONB
 
-## Country
+## Country(jsonb)
 
 ```sql
 SELECT COUNT(*)
@@ -333,6 +333,17 @@ WHERE metadata->>'country'='US';
 <img width="1057" height="509" alt="Screenshot 2026-07-21 at 8 14 07 PM" src="https://github.com/user-attachments/assets/7009ccea-aa9a-4a09-92b9-61dfa624d350" />
 
 ---
+
+## Country (json)
+
+``` sql
+SELECT *
+FROM patents.patent_metadata
+WHERE metadata->'country'='"US"' 
+LIMIT 20 ; 
+```
+<img width="1042" height="516" alt="Screenshot 2026-07-21 at 8 35 30 PM" src="https://github.com/user-attachments/assets/6f5e4c64-73fb-47aa-9324-5f0d857626e9" />
+
 
 ## Technology
 
