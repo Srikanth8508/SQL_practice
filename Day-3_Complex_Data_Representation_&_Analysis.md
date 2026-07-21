@@ -170,7 +170,8 @@ WHERE inventors && ARRAY
     'Inventor_00467',
     'Inventor_01385',
     'Inventor_05942'
-];
+]
+LIMIT 20 ;
 ```
 
 ### Explanation
