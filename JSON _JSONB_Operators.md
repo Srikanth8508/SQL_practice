@@ -3,7 +3,7 @@
 ## Sample Setup
 
 ```sql
-kaggle=> CREATE TABLE customer_orders
+ CREATE TABLE customer_orders
 (
     order_id INT,
     customer TEXT,
@@ -11,14 +11,14 @@ kaggle=> CREATE TABLE customer_orders
 );
 CREATE TABLE
 
-kaggle=> INSERT INTO customer_orders VALUES
+ INSERT INTO customer_orders VALUES
 (1, 'Alice', '{"item": "Laptop", "price": 1200, "specs": {"ram": "16GB", "storage": "512GB"}, "tags": ["tech", "work"], "active": true}'),
 (2, 'Bob',   '{"item": "Monitor", "price": 300, "specs": {"ram": null, "resolution": "4K"}, "tags": ["tech"], "active": false}'),
 (3, 'Charlie', '{"item": "Desk", "price": 150, "specs": {}, "tags": ["home", "furniture"], "active": true}'),
 (4, 'David', '{"item": "Keyboard", "price": 80, "specs": {"switches": "Mechanical"}, "tags": ["tech", "gaming"], "active": true}');
 INSERT 0 4
 
-kaggle=> SELECT * FROM customer_orders;
+ SELECT * FROM customer_orders;
 
 ```
 
@@ -57,8 +57,8 @@ json_column -> integer_index  -- Extract array element by position (0-indexed, n
 ## Working Example: Extracting Object Keys
 
 ```sql
-kaggle=> SELECT order_id, customer, details -> 'specs' AS specs_json
-kaggle-> FROM customer_orders;
+ SELECT order_id, customer, details -> 'specs' AS specs_json
+ FROM customer_orders;
 
 ```
 
@@ -86,13 +86,13 @@ JSON arrays use **0-based indexing** (the first item is at position `0`):
 | **`-1`** | Last Element | Negative numbers count **backward** from the end |
 
 ```sql
-kaggle=> SELECT 
-kaggle->   order_id, 
-kaggle->   details -> 'tags' AS full_array,
-kaggle->   details -> 'tags' -> 0  AS first_tag,   -- Position 0 (1st item)
-kaggle->   details -> 'tags' -> 1  AS second_tag,  -- Position 1 (2nd item)
-kaggle->   details -> 'tags' -> -1 AS last_tag     -- Position -1 (Last item)
-kaggle-> FROM customer_orders;
+ SELECT 
+   order_id, 
+   details -> 'tags' AS full_array,
+   details -> 'tags' -> 0  AS first_tag,   -- Position 0 (1st item)
+   details -> 'tags' -> 1  AS second_tag,  -- Position 1 (2nd item)
+   details -> 'tags' -> -1 AS last_tag     -- Position -1 (Last item)
+ FROM customer_orders;
 
 ```
 
@@ -132,9 +132,9 @@ json_column ->> integer_index  -- Extract array element as text by position
 ## Working Example: Extracting Object Keys as Text
 
 ```sql
-kaggle=> SELECT order_id, customer, details ->> 'item' AS item_name
-kaggle-> FROM customer_orders
-kaggle-> WHERE details ->> 'item' = 'Laptop';
+ SELECT order_id, customer, details ->> 'item' AS item_name
+ FROM customer_orders
+ WHERE details ->> 'item' = 'Laptop';
 
 ```
 
@@ -151,12 +151,12 @@ kaggle-> WHERE details ->> 'item' = 'Laptop';
 ## Working Example: Extracting Array Positions as Text
 
 ```sql
-kaggle=> SELECT 
-kaggle->   order_id, 
-kaggle->   customer, 
-kaggle->   details -> 'tags' ->> 0 AS first_tag_text
-kaggle-> FROM customer_orders
-kaggle-> WHERE details -> 'tags' ->> 0 = 'tech';
+ SELECT 
+   order_id, 
+   customer, 
+   details -> 'tags' ->> 0 AS first_tag_text
+ FROM customer_orders
+ WHERE details -> 'tags' ->> 0 = 'tech';
 
 ```
 
@@ -194,7 +194,7 @@ Because `->` outputs a **JSON object**, strings remain double-quoted (`"Laptop"`
 
 ```sql
 -- ❌ FAILS (0 rows returned) because JSON "Laptop" != SQL Text Laptop
-kaggle=> SELECT * FROM customer_orders WHERE details -> 'item' = 'Laptop';
+ SELECT * FROM customer_orders WHERE details -> 'item' = 'Laptop';
 
 ```
 
@@ -207,7 +207,7 @@ kaggle=> SELECT * FROM customer_orders WHERE details -> 'item' = 'Laptop';
 
 ```sql
 -- ✅ WORKS (but requires escaping quotes in your query)
-kaggle=> SELECT order_id, customer FROM customer_orders WHERE details -> 'item' = '"Laptop"';
+ SELECT order_id, customer FROM customer_orders WHERE details -> 'item' = '"Laptop"';
 
 ```
 
@@ -225,7 +225,7 @@ The `->>` operator strips away JSON quotes and outputs native **SQL text**, allo
 
 ```sql
 -- ✅ WORKS directly with standard SQL strings
-kaggle=> SELECT order_id, customer FROM customer_orders WHERE details ->> 'item' = 'Laptop';
+ SELECT order_id, customer FROM customer_orders WHERE details ->> 'item' = 'Laptop';
 
 ```
 
@@ -254,8 +254,8 @@ json_column #> '{path, keys}'
 ## Working Example
 
 ```sql
-kaggle=> SELECT order_id, customer, details #> '{specs, ram}' AS ram_json
-kaggle-> FROM customer_orders;
+ SELECT order_id, customer, details #> '{specs, ram}' AS ram_json
+ FROM customer_orders;
 
 ```
 
@@ -292,9 +292,9 @@ json_column #>> '{path, keys}'
 ## Working Example
 
 ```sql
-kaggle=> SELECT order_id, customer, details #>> '{specs, ram}' AS ram_text
-kaggle-> FROM customer_orders
-kaggle-> WHERE details #>> '{specs, ram}' IS NOT NULL;
+ SELECT order_id, customer, details #>> '{specs, ram}' AS ram_text
+ FROM customer_orders
+ WHERE details #>> '{specs, ram}' IS NOT NULL;
 
 ```
 
@@ -341,9 +341,9 @@ jsonb_column @> '{"key": "value"}'::jsonb
 
 ```sql
 -- Find active orders containing the 'tech' tag
-kaggle=> SELECT order_id, customer, details ->> 'item' AS item
-kaggle-> FROM customer_orders
-kaggle-> WHERE details @> '{"active": true, "tags": ["tech"]}';
+ SELECT order_id, customer, details ->> 'item' AS item
+ FROM customer_orders
+ WHERE details @> '{"active": true, "tags": ["tech"]}';
 
 ```
 
@@ -391,8 +391,8 @@ jsonb_column ? 'key_or_element'
 
 ```sql
 -- Check if the array inside 'tags' contains the string 'furniture'
-kaggle=> SELECT order_id, customer, details -> 'tags' ? 'furniture' AS sells_furniture
-kaggle-> FROM customer_orders;
+ SELECT order_id, customer, details -> 'tags' ? 'furniture' AS sells_furniture
+ FROM customer_orders;
 
 ```
 
@@ -430,9 +430,9 @@ jsonb_column ?| array['key1', 'key2']
 
 ```sql
 -- Check if tags contain EITHER 'furniture' OR 'gaming'
-kaggle=> SELECT order_id, customer, details ->> 'item' AS item
-kaggle-> FROM customer_orders
-kaggle-> WHERE details -> 'tags' ?| ARRAY['furniture', 'gaming'];
+ SELECT order_id, customer, details ->> 'item' AS item
+ FROM customer_orders
+ WHERE details -> 'tags' ?| ARRAY['furniture', 'gaming'];
 
 ```
 
@@ -476,9 +476,9 @@ jsonb_column ?& array['key1', 'key2']
 
 ```sql
 -- Find records where tags contain BOTH 'tech' AND 'work'
-kaggle=> SELECT order_id, customer, details ->> 'item' AS item
-kaggle-> FROM customer_orders
-kaggle-> WHERE details -> 'tags' ?& ARRAY['tech', 'work'];
+ SELECT order_id, customer, details ->> 'item' AS item
+ FROM customer_orders
+ WHERE details -> 'tags' ?& ARRAY['tech', 'work'];
 
 ```
 
@@ -494,10 +494,10 @@ kaggle-> WHERE details -> 'tags' ?& ARRAY['tech', 'work'];
 
 ```sql
 -- Bob and David have 'tech', but neither has 'work'
-kaggle=> SELECT order_id, customer
-kaggle-> FROM customer_orders
-kaggle-> WHERE order_id IN (2, 4) 
-kaggle->   AND details -> 'tags' ?& ARRAY['tech', 'work'];
+ SELECT order_id, customer
+ FROM customer_orders
+ WHERE order_id IN (2, 4) 
+   AND details -> 'tags' ?& ARRAY['tech', 'work'];
 
 ```
 
@@ -527,9 +527,9 @@ jsonb_column - integer_index
 ## Working Example (Deleting an Object Key)
 
 ```sql
-kaggle=> SELECT order_id, details - 'tags' - 'active' AS trimmed_details
-kaggle-> FROM customer_orders
-kaggle-> WHERE order_id = 1;
+ SELECT order_id, details - 'tags' - 'active' AS trimmed_details
+ FROM customer_orders
+ WHERE order_id = 1;
 
 ```
 
@@ -544,9 +544,9 @@ kaggle-> WHERE order_id = 1;
 ## Working Example (Deleting an Array Element)
 
 ```sql
-kaggle=> SELECT order_id, details -> 'tags' AS original_tags, (details -> 'tags') - 0 AS tags_after_delete
-kaggle-> FROM customer_orders
-kaggle-> WHERE order_id = 1;
+ SELECT order_id, details -> 'tags' AS original_tags, (details -> 'tags') - 0 AS tags_after_delete
+ FROM customer_orders
+ WHERE order_id = 1;
 
 ```
 
@@ -580,9 +580,9 @@ jsonb_column #- '{path, target}'
 ## Working Example
 
 ```sql
-kaggle=> SELECT order_id, details #- '{specs, ram}' AS specs_without_ram
-kaggle-> FROM customer_orders
-kaggle-> WHERE order_id = 1;
+ SELECT order_id, details #- '{specs, ram}' AS specs_without_ram
+ FROM customer_orders
+ WHERE order_id = 1;
 
 ```
 
@@ -606,7 +606,7 @@ Here is a detailed guide for PostgreSQL **JSON and JSONB operators**, complete w
 ## Sample Setup
 
 ```sql
-kaggle=> CREATE TABLE customer_orders
+ CREATE TABLE customer_orders
 (
     order_id INT,
     customer TEXT,
@@ -614,14 +614,14 @@ kaggle=> CREATE TABLE customer_orders
 );
 CREATE TABLE
 
-kaggle=> INSERT INTO customer_orders VALUES
+ INSERT INTO customer_orders VALUES
 (1, 'Alice',   '{"item": "Laptop", "price": 1200, "specs": {"ram": "16GB", "storage": "512GB"}, "tags": ["tech", "work"], "active": true}'),
 (2, 'Bob',     '{"item": "Monitor", "price": 300, "specs": {"ram": null, "resolution": "4K"}, "tags": ["tech"], "active": false}'),
 (3, 'Charlie', '{"item": "Desk", "price": 150, "specs": {}, "tags": ["home", "furniture"], "active": true}'),
 (4, 'David',   '{"item": "Keyboard", "price": 80, "specs": {"switches": "Mechanical"}, "tags": ["tech", "gaming"], "active": true}');
 INSERT 0 4
 
-kaggle=> SELECT * FROM customer_orders;
+ SELECT * FROM customer_orders;
 
 ```
 
@@ -655,8 +655,8 @@ json_column -> integer_index  -- Extract array element (0-indexed, negative numb
 ## Working Example (Extract Object Key)
 
 ```sql
-kaggle=> SELECT order_id, customer, details -> 'specs' AS specs_json
-kaggle-> FROM customer_orders;
+ SELECT order_id, customer, details -> 'specs' AS specs_json
+ FROM customer_orders;
 
 ```
 
@@ -680,13 +680,13 @@ kaggle-> FROM customer_orders;
 | **`-1`** | Last Element | Negative numbers count **backward** from the end |
 
 ```sql
-kaggle=> SELECT 
-kaggle->   order_id, 
-kaggle->   details -> 'tags' AS full_array,
-kaggle->   details -> 'tags' -> 0  AS first_tag,
-kaggle->   details -> 'tags' -> 1  AS second_tag,
-kaggle->   details -> 'tags' -> -1 AS last_tag
-kaggle-> FROM customer_orders;
+ SELECT 
+   order_id, 
+   details -> 'tags' AS full_array,
+   details -> 'tags' -> 0  AS first_tag,
+   details -> 'tags' -> 1  AS second_tag,
+   details -> 'tags' -> -1 AS last_tag
+ FROM customer_orders;
 
 ```
 
@@ -724,9 +724,9 @@ json_column ->> integer_index
 ## Working Example
 
 ```sql
-kaggle=> SELECT order_id, customer, details ->> 'item' AS item_name
-kaggle-> FROM customer_orders
-kaggle-> WHERE details ->> 'item' = 'Laptop';
+ SELECT order_id, customer, details ->> 'item' AS item_name
+ FROM customer_orders
+ WHERE details ->> 'item' = 'Laptop';
 
 ```
 
@@ -773,8 +773,8 @@ json_column #> '{path_array}'
 
 ```sql
 -- Extract 'ram' inside the nested 'specs' object
-kaggle=> SELECT order_id, customer, details #> '{specs, ram}' AS ram_json
-kaggle-> FROM customer_orders;
+ SELECT order_id, customer, details #> '{specs, ram}' AS ram_json
+ FROM customer_orders;
 
 ```
 
@@ -813,9 +813,9 @@ json_column #>> '{path_array}'
 ## Working Example
 
 ```sql
-kaggle=> SELECT order_id, customer, details #>> '{specs, ram}' AS ram_text
-kaggle-> FROM customer_orders
-kaggle-> WHERE details #>> '{specs, ram}' IS NOT NULL;
+ SELECT order_id, customer, details #>> '{specs, ram}' AS ram_text
+ FROM customer_orders
+ WHERE details #>> '{specs, ram}' IS NOT NULL;
 
 ```
 
@@ -858,9 +858,9 @@ jsonb_column @> '{"key": "value"}'::jsonb
 
 ```sql
 -- Find orders where active is true AND tags array contains 'tech'
-kaggle=> SELECT order_id, customer, details ->> 'item' AS item
-kaggle-> FROM customer_orders
-kaggle-> WHERE details @> '{"active": true, "tags": ["tech"]}';
+ SELECT order_id, customer, details ->> 'item' AS item
+ FROM customer_orders
+ WHERE details @> '{"active": true, "tags": ["tech"]}';
 
 ```
 
@@ -904,9 +904,9 @@ jsonb_column <@ '{"key": "value"}'::jsonb
 
 ```sql
 -- Test if an employee's specs object is contained within a maximum configuration limit
-kaggle=> SELECT order_id, customer, details -> 'specs' AS specs
-kaggle-> FROM customer_orders
-kaggle-> WHERE (details -> 'specs') <@ '{"ram": "16GB", "storage": "512GB", "switches": "Mechanical"}'::jsonb;
+ SELECT order_id, customer, details -> 'specs' AS specs
+ FROM customer_orders
+ WHERE (details -> 'specs') <@ '{"ram": "16GB", "storage": "512GB", "switches": "Mechanical"}'::jsonb;
 
 ```
 
@@ -943,8 +943,8 @@ jsonb_column ? 'key_or_string'
 
 ```sql
 -- Check if the array at details->'tags' contains the string element 'furniture'
-kaggle=> SELECT order_id, customer, details -> 'tags' ? 'furniture' AS sells_furniture
-kaggle-> FROM customer_orders;
+ SELECT order_id, customer, details -> 'tags' ? 'furniture' AS sells_furniture
+ FROM customer_orders;
 
 ```
 
@@ -977,9 +977,9 @@ jsonb_column ?| ARRAY['key1', 'key2']
 ## Working Example
 
 ```sql
-kaggle=> SELECT order_id, customer, details ->> 'item' AS item
-kaggle-> FROM customer_orders
-kaggle-> WHERE details -> 'tags' ?| ARRAY['furniture', 'gaming'];
+ SELECT order_id, customer, details ->> 'item' AS item
+ FROM customer_orders
+ WHERE details -> 'tags' ?| ARRAY['furniture', 'gaming'];
 
 ```
 
@@ -1022,9 +1022,9 @@ jsonb_column ?& ARRAY['key1', 'key2']
 ## Working Example
 
 ```sql
-kaggle=> SELECT order_id, customer, details ->> 'item' AS item
-kaggle-> FROM customer_orders
-kaggle-> WHERE details -> 'tags' ?& ARRAY['tech', 'work'];
+ SELECT order_id, customer, details ->> 'item' AS item
+ FROM customer_orders
+ WHERE details -> 'tags' ?& ARRAY['tech', 'work'];
 
 ```
 
@@ -1040,9 +1040,9 @@ kaggle-> WHERE details -> 'tags' ?& ARRAY['tech', 'work'];
 
 ```sql
 -- Searching for tags containing BOTH 'tech' and 'gaming'
-kaggle=> SELECT order_id, customer
-kaggle-> FROM customer_orders
-kaggle-> WHERE details -> 'tags' ?& ARRAY['tech', 'gaming'] AND order_id = 1;
+ SELECT order_id, customer
+ FROM customer_orders
+ WHERE details -> 'tags' ?& ARRAY['tech', 'gaming'] AND order_id = 1;
 
 ```
 
@@ -1071,9 +1071,9 @@ jsonb_column || jsonb_operand
 ## Working Example
 
 ```sql
-kaggle=> SELECT order_id, customer, details || '{"shipped": true}'::jsonb AS updated_details
-kaggle-> FROM customer_orders
-kaggle-> WHERE order_id = 1;
+ SELECT order_id, customer, details || '{"shipped": true}'::jsonb AS updated_details
+ FROM customer_orders
+ WHERE order_id = 1;
 
 ```
 
@@ -1104,9 +1104,9 @@ jsonb_column - integer_index     -- Delete array element by index position
 ## Working Example (Deleting Object Keys)
 
 ```sql
-kaggle=> SELECT order_id, details - 'tags' - 'active' AS trimmed_details
-kaggle-> FROM customer_orders
-kaggle-> WHERE order_id = 1;
+ SELECT order_id, details - 'tags' - 'active' AS trimmed_details
+ FROM customer_orders
+ WHERE order_id = 1;
 
 ```
 
@@ -1121,9 +1121,9 @@ kaggle-> WHERE order_id = 1;
 ## Working Example (Deleting Array Elements by Index)
 
 ```sql
-kaggle=> SELECT order_id, details -> 'tags' AS original_tags, (details -> 'tags') - 0 AS modified_tags
-kaggle-> FROM customer_orders
-kaggle-> WHERE order_id = 1;
+ SELECT order_id, details -> 'tags' AS original_tags, (details -> 'tags') - 0 AS modified_tags
+ FROM customer_orders
+ WHERE order_id = 1;
 
 ```
 
@@ -1153,9 +1153,9 @@ jsonb_column #- '{path_array}'
 ## Working Example
 
 ```sql
-kaggle=> SELECT order_id, details #- '{specs, ram}' AS specs_without_ram
-kaggle-> FROM customer_orders
-kaggle-> WHERE order_id = 1;
+ SELECT order_id, details #- '{specs, ram}' AS specs_without_ram
+ FROM customer_orders
+ WHERE order_id = 1;
 
 ```
 
