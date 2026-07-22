@@ -519,4 +519,64 @@ Notice how `specs` now only contains `"storage": "512GB"`. The targeted `"ram"` 
 
 ```
 
+---
+
+# `JSON` vs `JSONB`: Key Comparison & Trade-Offs
+
+PostgreSQL provides two distinct data types for storing JSON data: `JSON` and `JSONB`. The fundamental difference lies in **how they are stored and processed internally**.
+
+* **`JSON`** stores an **exact text copy** of the input string (including whitespace and key order).
+* **`JSONB`** stores data in a **decomposed binary format**, stripping extra whitespace and eliminating duplicate keys.
+
+---
+
+## Direct Comparison Matrix
+
+| Feature / Trait | `JSON` (Text Storage) | `JSONB` (Binary Storage) |
+| :--- | :--- | :--- |
+| **Storage Format** | Plain text string | Decomposed binary format |
+| **Insert Speed** | ⚡ **Faster** (No conversion needed) | 🐢 Slower (Parsing overhead on write) |
+| **Query Speed** | 🐢 Slower (Re-parsed on *every* read) | ⚡ **Faster** (Direct binary traversal) |
+| **Index Support** | Limited (Expression indexes only) | **Full Support** (GIN, btree, hash) |
+| **Operator Support** | Basic (`->`, `->>`, `#>`, `#>>`) | **All Operators** (`@>`, `?`, `?|`, `?&`, `-`, `#-`, etc.) |
+| **Preserves Whitespace** | ✅ Yes | ❌ No |
+| **Preserves Key Order** | ✅ Yes | ❌ No (Keys are re-ordered internally) |
+| **Duplicate Keys** | ✅ Keeps duplicate keys | ❌ Keeps only the **last** duplicate key value |
+
+---
+
+## Pros & Cons
+
+### 1. `JSON` (Plain Text)
+
+#### **Pros**
+* **Exact Fidelity:** Preserves identical formatting, spacing, and key ordering as inserted.
+* **Faster Ingestion:** Excellent for high-throughput write-heavy audit logs or streaming ingestion pipelines where JSON payload processing isn't immediately required.
+
+#### **Cons**
+* **Slow Query Processing:** Every query or extraction (`->>`) forces PostgreSQL to re-parse the raw text string from scratch.
+* **No Specialized Indexing:** Cannot be indexed with GIN indexes for fast key/value searches.
+* **No Advanced Operators:** Specialized JSON operators like containment (`@>`) or key check (`?`) do not work on raw `JSON`.
+
+---
+
+### 2. `JSONB` (Binary Format)
+
+#### **Pros**
+* **High Query Performance:** Data is pre-parsed on write, making field extraction and deeply nested queries significantly faster.
+* **GIN Indexing:** Supports GIN (Generalized Inverted Index) indexes, enabling millisecond lookup times across millions of records for conditions like `WHERE details @> '{"active": true}'`.
+* **Richer Operator Support:** Unlocks the full suit of path manipulation, containment, and search operators.
+* **Storage Efficiency:** Strips duplicate keys and unnecessary whitespace, saving space on large datasets.
+
+#### **Cons**
+* **Write Overhead:** Parsing, validating, and converting raw JSON into binary format incurs a slight CPU penalty during `INSERT` and `UPDATE` operations.
+* **Does Not Preserve Formatting:** Key ordering is altered (PostgreSQL sorts keys by length then alphabetically), and indentations/spaces are discarded.
+
+---
+
+## When to Use Which?
+
+> 💡 **Rule of Thumb:** **Use `JSONB` by default for almost all use cases.** 
+> Use plain `JSON` only if you have strict compliance requirements to preserve original raw text formatting or if write speed is your sole bottleneck.
+
 ```
