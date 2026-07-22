@@ -1,65 +1,53 @@
-# PostgreSQL ARRAY Operators - Complete Guide
+# PostgreSQL ARRAY Operators Guide
 
 ## Sample Table
-
-### Create Table
 
 ``` sql
 kaggle=> CREATE TABLE employee_skills
 (
-    emp_id   INT,
-    emp_name TEXT,
-    skills   TEXT[]
+ emp_id INT,
+ emp_name TEXT,
+ skills TEXT[]
 );
 CREATE TABLE
-```
 
-### Insert Sample Data
-
-``` sql
-kaggle=> INSERT INTO employee_skills
-VALUES
-(101,'John', ARRAY['SQL','Python','AWS']),
+kaggle=> INSERT INTO employee_skills VALUES
+(101,'John',ARRAY['SQL','Python','AWS']),
 (102,'Alice',ARRAY['Python','Java']),
 (103,'David',ARRAY['SQL','Docker']),
-(104,'Bob',  ARRAY['AWS','Linux']),
-(105,'Sam',  ARRAY['Python','SQL','Docker']);
-
+(104,'Bob',ARRAY['AWS','Linux']),
+(105,'Sam',ARRAY['Python','SQL','Docker']);
 INSERT 0 5
-```
 
-### Verify Data
-
-``` sql
 kaggle=> SELECT * FROM employee_skills;
 ```
 
 ``` text
  emp_id | emp_name |         skills
 --------+----------+--------------------------
-    101 | John     | {SQL,Python,AWS}
-    102 | Alice    | {Python,Java}
-    103 | David    | {SQL,Docker}
-    104 | Bob      | {AWS,Linux}
-    105 | Sam      | {Python,SQL,Docker}
+101 | John  | {SQL,Python,AWS}
+102 | Alice | {Python,Java}
+103 | David | {SQL,Docker}
+104 | Bob   | {AWS,Linux}
+105 | Sam   | {Python,SQL,Docker}
 (5 rows)
 ```
 
 ------------------------------------------------------------------------
 
-# 1. = (Equal)
+# = (Equal)
 
-**Purpose**
+## Purpose
 
-Returns TRUE only when both arrays are exactly the same.
+Checks whether two arrays are exactly the same.
 
-**Syntax**
+## Syntax
 
 ``` sql
 array1 = array2
 ```
 
-### Working Example
+## Working Example
 
 ``` sql
 kaggle=> SELECT *
@@ -76,17 +64,18 @@ kaggle-> WHERE skills = ARRAY['Python','Java'];
 
 ### Evaluation
 
-    emp_id   Result
-  -------- ----------
-       101  ❌ FALSE
-       102  ✅ TRUE
-       103  ❌ FALSE
-       104  ❌ FALSE
-       105  ❌ FALSE
+    emp_id skills                  Result
+  -------- --------------------- ----------
+       101 {SQL,Python,AWS}       ❌ FALSE
+       102 {Python,Java}          ✅ TRUE
+       103 {SQL,Docker}           ❌ FALSE
+       104 {AWS,Linux}            ❌ FALSE
+       105 {Python,SQL,Docker}    ❌ FALSE
 
-**Explanation**
+### Explanation
 
-Same elements, same order and same number of elements.
+Returns TRUE only when both arrays have the same elements, order and
+length.
 
 ### Failing Example
 
@@ -102,13 +91,19 @@ kaggle-> WHERE skills = ARRAY['Java','Python'];
 
 ------------------------------------------------------------------------
 
-# 2. \<\> (Not Equal)
+# \<\> (Not Equal)
 
-**Purpose**
+## Purpose
 
 Returns TRUE when arrays are not exactly the same.
 
-### Working Example
+## Syntax
+
+``` sql
+array1 <> array2
+```
+
+## Working Example
 
 ``` sql
 kaggle=> SELECT *
@@ -119,37 +114,54 @@ kaggle-> WHERE skills <> ARRAY['Python','Java'];
 ``` text
  emp_id | emp_name |         skills
 --------+----------+--------------------------
-    101 | John     | {SQL,Python,AWS}
-    103 | David    | {SQL,Docker}
-    104 | Bob      | {AWS,Linux}
-    105 | Sam      | {Python,SQL,Docker}
+101 | John | {SQL,Python,AWS}
+103 | David | {SQL,Docker}
+104 | Bob | {AWS,Linux}
+105 | Sam | {Python,SQL,Docker}
 (4 rows)
 ```
 
 ### Evaluation
 
-    emp_id   Result
-  -------- ----------
-       101  ✅ TRUE
-       102  ❌ FALSE
-       103  ✅ TRUE
-       104  ✅ TRUE
-       105  ✅ TRUE
+    emp_id skills                  Result
+  -------- --------------------- ----------
+       101 {SQL,Python,AWS}       ✅ TRUE
+       102 {Python,Java}          ❌ FALSE
+       103 {SQL,Docker}           ✅ TRUE
+       104 {AWS,Linux}            ✅ TRUE
+       105 {Python,SQL,Docker}    ✅ TRUE
 
-**Explanation**
+### Explanation
 
-Only Alice exactly matches `{Python,Java}`.
+Returns TRUE when arrays differ.
+
+### Failing Example
+
+``` sql
+kaggle=> SELECT *
+kaggle-> FROM employee_skills
+kaggle-> WHERE skills <> ARRAY['SQL','Python','AWS','Java'];
+```
+
+``` text
+(0 rows)
+```
 
 ------------------------------------------------------------------------
 
-# 3. @\> (Contains)
+# @\> (Contains)
 
-**Purpose**
+## Purpose
 
-Returns TRUE when the left array contains all elements of the right
-array.
+Returns TRUE when left array contains all elements of right array.
 
-### Working Example
+## Syntax
+
+``` sql
+array1 @> array2
+```
+
+## Working Example
 
 ``` sql
 kaggle=> SELECT *
@@ -160,25 +172,25 @@ kaggle-> WHERE skills @> ARRAY['SQL'];
 ``` text
  emp_id | emp_name |         skills
 --------+----------+--------------------------
-    101 | John     | {SQL,Python,AWS}
-    103 | David    | {SQL,Docker}
-    105 | Sam      | {Python,SQL,Docker}
+101 | John | {SQL,Python,AWS}
+103 | David | {SQL,Docker}
+105 | Sam | {Python,SQL,Docker}
 (3 rows)
 ```
 
 ### Evaluation
 
-    emp_id   Result
-  -------- ----------
-       101  ✅ TRUE
-       102  ❌ FALSE
-       103  ✅ TRUE
-       104  ❌ FALSE
-       105  ✅ TRUE
+    emp_id skills                  Result
+  -------- --------------------- ----------
+       101 {SQL,Python,AWS}       ✅ TRUE
+       102 {Python,Java}          ❌ FALSE
+       103 {SQL,Docker}           ✅ TRUE
+       104 {AWS,Linux}            ❌ FALSE
+       105 {Python,SQL,Docker}    ✅ TRUE
 
-**Explanation**
+### Explanation
 
-Every value in the right array must exist in the left array.
+All elements on the right must exist on the left.
 
 ### Failing Example
 
@@ -189,21 +201,24 @@ kaggle-> WHERE skills @> ARRAY['SQL','Java'];
 ```
 
 ``` text
- emp_id | emp_name | skills
---------+----------+--------
 (0 rows)
 ```
 
 ------------------------------------------------------------------------
 
-# 4. \<@ (Contained By)
+# \<@ (Contained By)
 
-**Purpose**
+## Purpose
 
-Returns TRUE when every element of the left array exists in the right
-array.
+Returns TRUE when left array is contained in right array.
 
-### Working Example
+## Syntax
+
+``` sql
+array1 <@ array2
+```
+
+## Working Example
 
 ``` sql
 kaggle=> SELECT *
@@ -214,25 +229,25 @@ kaggle-> WHERE ARRAY['SQL'] <@ skills;
 ``` text
  emp_id | emp_name |         skills
 --------+----------+--------------------------
-    101 | John     | {SQL,Python,AWS}
-    103 | David    | {SQL,Docker}
-    105 | Sam      | {Python,SQL,Docker}
+101 | John | {SQL,Python,AWS}
+103 | David | {SQL,Docker}
+105 | Sam | {Python,SQL,Docker}
 (3 rows)
 ```
 
 ### Evaluation
 
-    emp_id   Result
-  -------- ----------
-       101  ✅ TRUE
-       102  ❌ FALSE
-       103  ✅ TRUE
-       104  ❌ FALSE
-       105  ✅ TRUE
+    emp_id skills                  Result
+  -------- --------------------- ----------
+       101 {SQL,Python,AWS}       ✅ TRUE
+       102 {Python,Java}          ❌ FALSE
+       103 {SQL,Docker}           ✅ TRUE
+       104 {AWS,Linux}            ❌ FALSE
+       105 {Python,SQL,Docker}    ✅ TRUE
 
-**Explanation**
+### Explanation
 
-All values in the left array must be present in the right array.
+Every element of the left array must exist in the right array.
 
 ### Failing Example
 
@@ -243,20 +258,24 @@ kaggle-> WHERE ARRAY['SQL','Java'] <@ skills;
 ```
 
 ``` text
- emp_id | emp_name | skills
---------+----------+--------
 (0 rows)
 ```
 
 ------------------------------------------------------------------------
 
-# 5. && (Overlap)
+# && (Overlap)
 
-**Purpose**
+## Purpose
 
-Returns TRUE when two arrays have at least one common element.
+Returns TRUE when arrays share at least one common element.
 
-### Working Example
+## Syntax
+
+``` sql
+array1 && array2
+```
+
+## Working Example
 
 ``` sql
 kaggle=> SELECT *
@@ -267,26 +286,26 @@ kaggle-> WHERE skills && ARRAY['Java','SQL'];
 ``` text
  emp_id | emp_name |         skills
 --------+----------+--------------------------
-    101 | John     | {SQL,Python,AWS}
-    102 | Alice    | {Python,Java}
-    103 | David    | {SQL,Docker}
-    105 | Sam      | {Python,SQL,Docker}
+101 | John | {SQL,Python,AWS}
+102 | Alice | {Python,Java}
+103 | David | {SQL,Docker}
+105 | Sam | {Python,SQL,Docker}
 (4 rows)
 ```
 
 ### Evaluation
 
-    emp_id   Result
-  -------- ----------
-       101  ✅ TRUE
-       102  ✅ TRUE
-       103  ✅ TRUE
-       104  ❌ FALSE
-       105  ✅ TRUE
+    emp_id skills                  Result
+  -------- --------------------- ----------
+       101 {SQL,Python,AWS}       ✅ TRUE
+       102 {Python,Java}          ✅ TRUE
+       103 {SQL,Docker}           ✅ TRUE
+       104 {AWS,Linux}            ❌ FALSE
+       105 {Python,SQL,Docker}    ✅ TRUE
 
-**Explanation**
+### Explanation
 
-At least one common element is enough.
+Only one common element is required.
 
 ### Failing Example
 
@@ -297,38 +316,54 @@ kaggle-> WHERE skills && ARRAY['Go','Rust'];
 ```
 
 ``` text
- emp_id | emp_name | skills
---------+----------+--------
 (0 rows)
 ```
 
 ------------------------------------------------------------------------
 
-# 6. \|\| (Concatenate)
+# \|\| (Concatenate)
 
-**Purpose**
+## Purpose
 
-Combines two arrays into one array.
+Joins two arrays into one array.
 
-### Example
+## Syntax
 
 ``` sql
-kaggle=> SELECT *,
-kaggle->        skills || ARRAY['Docker'] AS updated_skills
+array1 || array2
+```
+
+## Working Example
+
+``` sql
+kaggle=> SELECT *
 kaggle-> FROM employee_skills
-kaggle-> WHERE emp_id = 101;
+kaggle-> WHERE skills || ARRAY['Git'];
 ```
 
 ``` text
- emp_id | emp_name |      skills       |        updated_skills
---------+----------+-------------------+--------------------------------
-    101 | John     | {SQL,Python,AWS}  | {SQL,Python,AWS,Docker}
-(1 row)
+ emp_id | emp_name |              ?column?
+--------+----------+----------------------------------------
+101 | John | {SQL,Python,AWS,Git}
+102 | Alice | {Python,Java,Git}
+103 | David | {SQL,Docker,Git}
+104 | Bob | {AWS,Linux,Git}
+105 | Sam | {Python,SQL,Docker,Git}
+(5 rows)
 ```
 
-**Explanation**
+### Explanation
 
-The original array is not modified. The concatenated array is returned
-only in the query result.
+Appends the second array to the first.
 
-------------------------------------------------------------------------
+### Failing Example
+
+``` sql
+kaggle=> SELECT *
+kaggle-> FROM employee_skills
+kaggle-> WHERE ARRAY[]::text[] || ARRAY[]::text[];
+```
+
+``` text
+(0 rows)
+```
