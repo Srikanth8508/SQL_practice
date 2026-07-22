@@ -32,24 +32,29 @@ kaggle=> SELECT * FROM customer_orders;
 (4 rows)
 
 ```
-
 ---
 
-# `->` (Get JSON Object Field by Key or Index)
+# `->` (Get JSON Object Field or Array Element)
 
 ## Purpose
 
-Extracts a field from a JSON object (or array element by index) as a **JSON/JSONB object**.
+Extracts a field from a JSON object by **key name** or an array element by **position index** as a **JSON/JSONB object**.
+
+> ⚠️ **Key Concept:** The `->` operator returns data in **JSON format**, keeping string values wrapped in double quotes (`"value"`). Because it returns JSON, you can chain multiple `->` operators together to navigate deeper into nested structures.
+
+---
 
 ## Syntax
 
 ```sql
-json_column -> 'key'         -- Extract object key
-json_column -> integer_index -- Extract array element (0-indexed)
+json_column -> 'key'          -- Extract object field by key name
+json_column -> integer_index  -- Extract array element by position (0-indexed, negative integers count backward)
 
 ```
 
-## Working Example
+---
+
+## Working Example: Extracting Object Keys
 
 ```sql
 kaggle=> SELECT order_id, customer, details -> 'specs' AS specs_json
@@ -68,46 +73,63 @@ kaggle-> FROM customer_orders;
 
 ```
 
-### Array Indexing Example
+---
+
+## Working Example: Extracting Array Elements by Position (Index)
+
+JSON arrays use **0-based indexing** (the first item is at position `0`):
+
+| Index | Position | Description |
+| --- | --- | --- |
+| **`0`** | 1st Element | First item in the array |
+| **`1`** | 2nd Element | Second item in the array |
+| **`-1`** | Last Element | Negative numbers count **backward** from the end |
 
 ```sql
-kaggle=> SELECT order_id, customer, details -> 'tags' -> 0 AS first_tag_json
+kaggle=> SELECT 
+kaggle->   order_id, 
+kaggle->   details -> 'tags' AS full_array,
+kaggle->   details -> 'tags' -> 0  AS first_tag,   -- Position 0 (1st item)
+kaggle->   details -> 'tags' -> 1  AS second_tag,  -- Position 1 (2nd item)
+kaggle->   details -> 'tags' -> -1 AS last_tag     -- Position -1 (Last item)
 kaggle-> FROM customer_orders;
 
 ```
 
 ```text
- order_id | customer | first_tag_json 
-----------+----------+----------------
-        1 | Alice    | "tech"
-        2 | Bob      | "tech"
-        3 | Charlie  | "home"
-        4 | David    | "tech"
+ order_id |       full_array       | first_tag | second_tag | last_tag 
+----------+------------------------+-----------+------------+----------
+        1 | ["tech", "work"]       | "tech"    | "work"     | "work"
+        2 | ["tech"]               | "tech"    | NULL       | "tech"
+        3 | ["home", "furniture"]  | "home"    | "furniture"| "furniture"
+        4 | ["tech", "gaming"]     | "tech"    | "gaming"   | "gaming"
 (4 rows)
 
 ```
 
 ### Explanation
 
-Notice the quotes around `"tech"` or the JSON object shape `{}` in the output. The `->` operator returns data as **JSON**, meaning string values remain wrapped in double quotes and JSON formatting is preserved.
+Notice the double quotes around `"tech"` or `"work"` in the output. The `->` operator retains JSON type-formatting. If an array position index is out of bounds (such as requesting index `1` for Bob), SQL returns `NULL`.
 
 ---
 
-# `->>` (Get JSON Object Field as Text)
+# `->>` (Get JSON Field or Array Element as Text)
 
 ## Purpose
 
-Extracts a field from a JSON object (or array element) as plain **text**.
+Extracts a JSON object field or array element directly as plain **SQL text**.
 
 ## Syntax
 
 ```sql
-json_column ->> 'key'
-json_column ->> integer_index
+json_column ->> 'key'          -- Extract object field as text
+json_column ->> integer_index  -- Extract array element as text by position
 
 ```
 
-## Working Example
+---
+
+## Working Example: Extracting Object Keys as Text
 
 ```sql
 kaggle=> SELECT order_id, customer, details ->> 'item' AS item_name
@@ -124,7 +146,33 @@ kaggle-> WHERE details ->> 'item' = 'Laptop';
 
 ```
 
-### Evaluation Matrix (`details ->> 'item'`)
+---
+
+## Working Example: Extracting Array Positions as Text
+
+```sql
+kaggle=> SELECT 
+kaggle->   order_id, 
+kaggle->   customer, 
+kaggle->   details -> 'tags' ->> 0 AS first_tag_text
+kaggle-> FROM customer_orders
+kaggle-> WHERE details -> 'tags' ->> 0 = 'tech';
+
+```
+
+```text
+ order_id | customer | first_tag_text 
+----------+----------+----------------
+        1 | Alice    | tech
+        2 | Bob      | tech
+        4 | David    | tech
+(3 rows)
+
+```
+
+---
+
+## Evaluation Matrix (`details -> 'item'` vs `details ->> 'item'`)
 
 ```text
  order_id | customer | details -> 'item' (JSON) | details ->> 'item' (Text) | Matches 'Laptop'? 
@@ -136,14 +184,16 @@ kaggle-> WHERE details ->> 'item' = 'Laptop';
 
 ```
 
-### Explanation
+---
 
-`->>` strips away JSON quotes and converts the output to native SQL `TEXT`. You must use `->>` (not `->`) when comparing JSON string fields against SQL text values in a `WHERE` clause.
+## Side-by-Side Comparison: `->` vs `->>` in `WHERE` Clauses
 
-### Common Mistake
+### 1. Using `->` (JSON Output)
+
+Because `->` outputs a **JSON object**, strings remain double-quoted (`"Laptop"`). Comparing `->` to plain SQL text fails unless you explicitly include double quotes inside single quotes (`'"Laptop"'`).
 
 ```sql
--- FAILS to match because "Laptop" (JSON string) != Laptop (SQL text)
+-- ❌ FAILS (0 rows returned) because JSON "Laptop" != SQL Text Laptop
 kaggle=> SELECT * FROM customer_orders WHERE details -> 'item' = 'Laptop';
 
 ```
@@ -155,6 +205,37 @@ kaggle=> SELECT * FROM customer_orders WHERE details -> 'item' = 'Laptop';
 
 ```
 
+```sql
+-- ✅ WORKS (but requires escaping quotes in your query)
+kaggle=> SELECT order_id, customer FROM customer_orders WHERE details -> 'item' = '"Laptop"';
+
+```
+
+```text
+ order_id | customer 
+----------+----------
+        1 | Alice
+(1 row)
+
+```
+
+### 2. Using `->>` (Text Output)
+
+The `->>` operator strips away JSON quotes and outputs native **SQL text**, allowing clean comparisons.
+
+```sql
+-- ✅ WORKS directly with standard SQL strings
+kaggle=> SELECT order_id, customer FROM customer_orders WHERE details ->> 'item' = 'Laptop';
+
+```
+
+```text
+ order_id | customer 
+----------+----------
+        1 | Alice
+(1 row)
+
+```
 ---
 
 # `#>` (Get Nested JSON Object at Path)
