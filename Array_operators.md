@@ -64,6 +64,7 @@ kaggle-> WHERE skills = ARRAY['Python','Java'];
 
 ### Evaluation
 
+``` text
     emp_id skills                  Result
   -------- --------------------- ----------
        101 {SQL,Python,AWS}       ❌ FALSE
@@ -71,6 +72,7 @@ kaggle-> WHERE skills = ARRAY['Python','Java'];
        103 {SQL,Docker}           ❌ FALSE
        104 {AWS,Linux}            ❌ FALSE
        105 {Python,SQL,Docker}    ❌ FALSE
+```
 
 ### Explanation
 
