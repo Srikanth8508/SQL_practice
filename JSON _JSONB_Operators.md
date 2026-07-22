@@ -516,6 +516,580 @@ kaggle-> WHERE order_id = 1;
 ### Explanation
 
 Notice how `specs` now only contains `"storage": "512GB"`. The targeted `"ram"` key inside the nested object was removed cleanly.
+Here is a detailed guide for PostgreSQL **JSON and JSONB operators**, complete with working SQL, accurate ASCII outputs, evaluation matrices, and explanations.
+
+---
+
+# PostgreSQL JSON & JSONB Operators Guide
+
+## Sample Setup
+
+```sql
+kaggle=> CREATE TABLE customer_orders
+(
+    order_id INT,
+    customer TEXT,
+    details  JSONB
+);
+CREATE TABLE
+
+kaggle=> INSERT INTO customer_orders VALUES
+(1, 'Alice',   '{"item": "Laptop", "price": 1200, "specs": {"ram": "16GB", "storage": "512GB"}, "tags": ["tech", "work"], "active": true}'),
+(2, 'Bob',     '{"item": "Monitor", "price": 300, "specs": {"ram": null, "resolution": "4K"}, "tags": ["tech"], "active": false}'),
+(3, 'Charlie', '{"item": "Desk", "price": 150, "specs": {}, "tags": ["home", "furniture"], "active": true}'),
+(4, 'David',   '{"item": "Keyboard", "price": 80, "specs": {"switches": "Mechanical"}, "tags": ["tech", "gaming"], "active": true}');
+INSERT 0 4
+
+kaggle=> SELECT * FROM customer_orders;
+
+```
+
+```text
+ order_id | customer |                                                       details                                                       
+----------+----------+---------------------------------------------------------------------------------------------------------------------
+        1 | Alice    | {"item": "Laptop", "tags": ["tech", "work"], "price": 1200, "active": true, "specs": {"ram": "16GB", "storage": "512GB"}}
+        2 | Bob      | {"item": "Monitor", "tags": ["tech"], "price": 300, "active": false, "specs": {"ram": null, "resolution": "4K"}}
+        3 | Charlie  | {"item": "Desk", "tags": ["home", "furniture"], "price": 150, "active": true, "specs": {}}
+        4 | David    | {"item": "Keyboard", "tags": ["tech", "gaming"], "price": 80, "active": true, "specs": {"switches": "Mechanical"}}
+(4 rows)
+
+```
+
+---
+
+# `->` (Get JSON Object Field or Array Element)
+
+## Purpose
+
+Extracts a field from a JSON object by **key name** or an array element by **index position** as a **JSON/JSONB object**.
+
+## Syntax
+
+```sql
+json_column -> 'key'          -- Extract object field
+json_column -> integer_index  -- Extract array element (0-indexed, negative numbers count backward)
+
+```
+
+## Working Example (Extract Object Key)
+
+```sql
+kaggle=> SELECT order_id, customer, details -> 'specs' AS specs_json
+kaggle-> FROM customer_orders;
+
+```
+
+```text
+ order_id | customer |               specs_json               
+----------+----------+----------------------------------------
+        1 | Alice    | {"ram": "16GB", "storage": "512GB"}
+        2 | Bob      | {"ram": null, "resolution": "4K"}
+        3 | Charlie  | {}
+        4 | David    | {"switches": "Mechanical"}
+(4 rows)
+
+```
+
+## Working Example (Extract Array Position Index)
+
+| Index Position | Array Reference | Description |
+| --- | --- | --- |
+| **`0`** | 1st Element | First item in the array |
+| **`1`** | 2nd Element | Second item in the array |
+| **`-1`** | Last Element | Negative numbers count **backward** from the end |
+
+```sql
+kaggle=> SELECT 
+kaggle->   order_id, 
+kaggle->   details -> 'tags' AS full_array,
+kaggle->   details -> 'tags' -> 0  AS first_tag,
+kaggle->   details -> 'tags' -> 1  AS second_tag,
+kaggle->   details -> 'tags' -> -1 AS last_tag
+kaggle-> FROM customer_orders;
+
+```
+
+```text
+ order_id |       full_array       | first_tag | second_tag | last_tag 
+----------+------------------------+-----------+------------+----------
+        1 | ["tech", "work"]       | "tech"    | "work"     | "work"
+        2 | ["tech"]               | "tech"    | NULL       | "tech"
+        3 | ["home", "furniture"]  | "home"    | "furniture"| "furniture"
+        4 | ["tech", "gaming"]     | "tech"    | "gaming"   | "gaming"
+(4 rows)
+
+```
+
+### Explanation
+
+The `->` operator retains JSON type-formatting (e.g., strings remain double-quoted as `"tech"`). If an array index is out of bounds (like requesting index `1` for Bob), SQL returns `NULL`.
+
+---
+
+# `->>` (Get JSON Field or Array Element as Text)
+
+## Purpose
+
+Extracts a JSON object field or array element directly as plain **text**.
+
+## Syntax
+
+```sql
+json_column ->> 'key'
+json_column ->> integer_index
+
+```
+
+## Working Example
+
+```sql
+kaggle=> SELECT order_id, customer, details ->> 'item' AS item_name
+kaggle-> FROM customer_orders
+kaggle-> WHERE details ->> 'item' = 'Laptop';
+
+```
+
+```text
+ order_id | customer | item_name 
+----------+----------+-----------
+        1 | Alice    | Laptop
+(1 row)
+
+```
+
+### Evaluation Matrix
+
+```text
+ order_id | customer | details -> 'item' (JSON) | details ->> 'item' (Text) | Matches 'Laptop'? 
+----------+----------+--------------------------+---------------------------+-------------------
+        1 | Alice    | "Laptop"                 | Laptop                    | TRUE
+        2 | Bob      | "Monitor"                | Monitor                   | FALSE
+        3 | Charlie  | "Desk"                   | Desk                      | FALSE
+        4 | David    | "Keyboard"               | Keyboard                  | FALSE
+
+```
+
+### Explanation
+
+`->>` strips quotes from JSON strings and converts numeric or boolean values to native SQL `TEXT`. You must use `->>` when filtering JSON text values in a `WHERE` clause.
+
+---
+
+# `#>` (Get Nested Field at Path)
+
+## Purpose
+
+Navigates down a deeply nested path of keys and/or array indexes, returning the result as a **JSON/JSONB object**.
+
+## Syntax
+
+```sql
+json_column #> '{path_array}'
+
+```
+
+## Working Example
+
+```sql
+-- Extract 'ram' inside the nested 'specs' object
+kaggle=> SELECT order_id, customer, details #> '{specs, ram}' AS ram_json
+kaggle-> FROM customer_orders;
+
+```
+
+```text
+ order_id | customer | ram_json 
+----------+----------+----------
+        1 | Alice    | "16GB"
+        2 | Bob      | null
+        3 | Charlie  | 
+        4 | David    | 
+(4 rows)
+
+```
+
+### Explanation
+
+* **Alice (Row 1):** Returns `"16GB"` (JSON string).
+* **Bob (Row 2):** Returns explicit JSON `null` because `"ram": null` is explicitly declared.
+* **Charlie & David (Rows 3 & 4):** Return SQL `NULL` (empty) because the key does not exist.
+
+---
+
+# `#>>` (Get Nested Field at Path as Text)
+
+## Purpose
+
+Navigates down a nested JSON path and returns the target value as plain **text**.
+
+## Syntax
+
+```sql
+json_column #>> '{path_array}'
+
+```
+
+## Working Example
+
+```sql
+kaggle=> SELECT order_id, customer, details #>> '{specs, ram}' AS ram_text
+kaggle-> FROM customer_orders
+kaggle-> WHERE details #>> '{specs, ram}' IS NOT NULL;
+
+```
+
+```text
+ order_id | customer | ram_text 
+----------+----------+----------
+        1 | Alice    | 16GB
+(1 row)
+
+```
+
+### Evaluation Matrix
+
+```text
+ order_id | customer | #> '{specs, ram}' | #>> '{specs, ram}' | Evaluation / Result 
+----------+----------+-------------------+--------------------+-----------------------
+        1 | Alice    | "16GB"            | 16GB               | Evaluates as SQL Text
+        2 | Bob      | null              | [NULL]             | JSON null -> SQL NULL
+        3 | Charlie  | [NULL]            | [NULL]             | Path does not exist
+        4 | David    | [NULL]            | [NULL]             | Path does not exist
+
+```
+
+---
+
+# `@>` (JSONB Contains)
+
+## Purpose
+
+Checks if the left JSONB document contains all key-value pairs or array elements specified in the right JSONB operand.
+
+## Syntax
+
+```sql
+jsonb_column @> '{"key": "value"}'::jsonb
+
+```
+
+## Working Example
+
+```sql
+-- Find orders where active is true AND tags array contains 'tech'
+kaggle=> SELECT order_id, customer, details ->> 'item' AS item
+kaggle-> FROM customer_orders
+kaggle-> WHERE details @> '{"active": true, "tags": ["tech"]}';
+
+```
+
+```text
+ order_id | customer |   item   
+----------+----------+----------
+        1 | Alice    | Laptop
+        4 | David    | Keyboard
+(2 rows)
+
+```
+
+### Evaluation Matrix
+
+```text
+ order_id | customer | Contains {"active": true, "tags": ["tech"]}? | Reason 
+----------+----------+----------------------------------------------+----------------------------------
+        1 | Alice    | TRUE                                         | Active is true, tags has 'tech'
+        2 | Bob      | FALSE                                        | Active is false (mismatch)
+        3 | Charlie  | FALSE                                        | Missing 'tech' tag
+        4 | David    | TRUE                                         | Active is true, tags has 'tech'
+
+```
+
+---
+
+# `<@` (JSONB Contained By)
+
+## Purpose
+
+Checks if the left JSONB document is entirely subsetted by (contained inside) the right JSONB document.
+
+## Syntax
+
+```sql
+jsonb_column <@ '{"key": "value"}'::jsonb
+
+```
+
+## Working Example
+
+```sql
+-- Test if an employee's specs object is contained within a maximum configuration limit
+kaggle=> SELECT order_id, customer, details -> 'specs' AS specs
+kaggle-> FROM customer_orders
+kaggle-> WHERE (details -> 'specs') <@ '{"ram": "16GB", "storage": "512GB", "switches": "Mechanical"}'::jsonb;
+
+```
+
+```text
+ order_id | customer |               specs               
+----------+----------+-----------------------------------
+        1 | Alice    | {"ram": "16GB", "storage": "512GB"}
+        3 | Charlie  | {}
+        4 | David    | {"switches": "Mechanical"}
+(3 rows)
+
+```
+
+### Explanation
+
+Returns `TRUE` if **every** key-value pair in the left object exists in the right object. Bob (Row 2) is excluded because his `"resolution": "4K"` key is not part of the allowed reference object.
+
+---
+
+# `?` (Key Exists)
+
+## Purpose
+
+Checks whether a top-level **string key** (in an object) or **string element** (in an array) exists inside a JSONB document.
+
+## Syntax
+
+```sql
+jsonb_column ? 'key_or_string'
+
+```
+
+## Working Example
+
+```sql
+-- Check if the array at details->'tags' contains the string element 'furniture'
+kaggle=> SELECT order_id, customer, details -> 'tags' ? 'furniture' AS sells_furniture
+kaggle-> FROM customer_orders;
+
+```
+
+```text
+ order_id | customer | sells_furniture 
+----------+----------+-----------------
+        1 | Alice    | FALSE
+        2 | Bob      | FALSE
+        3 | Charlie  | TRUE
+        4 | David    | FALSE
+(4 rows)
+
+```
+
+---
+
+# `?|` (Exist Any)
+
+## Purpose
+
+Returns `TRUE` if **any** of the strings in the given array exist as top-level keys or array elements in the JSONB document.
+
+## Syntax
+
+```sql
+jsonb_column ?| ARRAY['key1', 'key2']
+
+```
+
+## Working Example
+
+```sql
+kaggle=> SELECT order_id, customer, details ->> 'item' AS item
+kaggle-> FROM customer_orders
+kaggle-> WHERE details -> 'tags' ?| ARRAY['furniture', 'gaming'];
+
+```
+
+```text
+ order_id | customer |   item   
+----------+----------+----------
+        3 | Charlie  | Desk
+        4 | David    | Keyboard
+(2 rows)
+
+```
+
+### Evaluation Matrix
+
+```text
+ order_id | customer | tags                  | Has 'furniture' OR 'gaming'? 
+----------+----------+-----------------------+------------------------------
+        1 | Alice    | ["tech", "work"]      | FALSE
+        2 | Bob      | ["tech"]              | FALSE
+        3 | Charlie  | ["home", "furniture"] | TRUE ('furniture')
+        4 | David    | ["tech", "gaming"]    | TRUE ('gaming')
+
+```
+
+---
+
+# `?&` (Exist All)
+
+## Purpose
+
+Returns `TRUE` only if **all** of the specified strings exist as top-level keys or array elements in the JSONB document.
+
+## Syntax
+
+```sql
+jsonb_column ?& ARRAY['key1', 'key2']
+
+```
+
+## Working Example
+
+```sql
+kaggle=> SELECT order_id, customer, details ->> 'item' AS item
+kaggle-> FROM customer_orders
+kaggle-> WHERE details -> 'tags' ?& ARRAY['tech', 'work'];
+
+```
+
+```text
+ order_id | customer |  item  
+----------+----------+--------
+        1 | Alice    | Laptop
+(1 row)
+
+```
+
+### Failing Example
+
+```sql
+-- Searching for tags containing BOTH 'tech' and 'gaming'
+kaggle=> SELECT order_id, customer
+kaggle-> FROM customer_orders
+kaggle-> WHERE details -> 'tags' ?& ARRAY['tech', 'gaming'] AND order_id = 1;
+
+```
+
+```text
+ order_id | customer 
+----------+----------
+(0 rows)
+
+```
+
+---
+
+# `||` (Concatenate / Merge)
+
+## Purpose
+
+Merges two JSONB objects or concatenates two JSONB arrays together.
+
+## Syntax
+
+```sql
+jsonb_column || jsonb_operand
+
+```
+
+## Working Example
+
+```sql
+kaggle=> SELECT order_id, customer, details || '{"shipped": true}'::jsonb AS updated_details
+kaggle-> FROM customer_orders
+kaggle-> WHERE order_id = 1;
+
+```
+
+```text
+ order_id | customer |                                                           updated_details                                                           
+----------+----------+-------------------------------------------------------------------------------------------------------------------------------------
+        1 | Alice    | {"item": "Laptop", "tags": ["tech", "work"], "price": 1200, "active": true, "specs": {"ram": "16GB", "storage": "512GB"}, "shipped": true}
+(1 row)
+
+```
+
+---
+
+# `-` (Delete Key or Array Element)
+
+## Purpose
+
+Deletes an object key or array element from a JSONB document by name or index.
+
+## Syntax
+
+```sql
+jsonb_column - 'key_or_element'  -- Delete object key or matching string element
+jsonb_column - integer_index     -- Delete array element by index position
+
+```
+
+## Working Example (Deleting Object Keys)
+
+```sql
+kaggle=> SELECT order_id, details - 'tags' - 'active' AS trimmed_details
+kaggle-> FROM customer_orders
+kaggle-> WHERE order_id = 1;
+
+```
+
+```text
+ order_id |                                   trimmed_details                                   
+----------+-------------------------------------------------------------------------------------
+        1 | {"item": "Laptop", "price": 1200, "specs": {"ram": "16GB", "storage": "512GB"}}
+(1 row)
+
+```
+
+## Working Example (Deleting Array Elements by Index)
+
+```sql
+kaggle=> SELECT order_id, details -> 'tags' AS original_tags, (details -> 'tags') - 0 AS modified_tags
+kaggle-> FROM customer_orders
+kaggle-> WHERE order_id = 1;
+
+```
+
+```text
+ order_id |   original_tags   | modified_tags 
+----------+-------------------+---------------
+        1 | ["tech", "work"]  | ["work"]
+(1 row)
+
+```
+
+---
+
+# `#-` (Delete Field at Path)
+
+## Purpose
+
+Deletes a nested field or array element at a specified path array.
+
+## Syntax
+
+```sql
+jsonb_column #- '{path_array}'
+
+```
+
+## Working Example
+
+```sql
+kaggle=> SELECT order_id, details #- '{specs, ram}' AS specs_without_ram
+kaggle-> FROM customer_orders
+kaggle-> WHERE order_id = 1;
+
+```
+
+```text
+ order_id |                                                      specs_without_ram                                                      
+----------+-----------------------------------------------------------------------------------------------------------------------------
+        1 | {"item": "Laptop", "tags": ["tech", "work"], "price": 1200, "active": true, "specs": {"storage": "512GB"}}
+(1 row)
+
+```
+
+### Explanation
+
+Notice that inside `specs`, `"ram": "16GB"` was removed while preserving `"storage": "512GB"`.
+
 
 ---
 
