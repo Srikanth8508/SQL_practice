@@ -64,7 +64,7 @@ kaggle-> WHERE skills = ARRAY['Python','Java'];
 
 ### Evaluation
 
-``` text
+``` text 
     emp_id skills                  Result
   -------- --------------------- ----------
        101 {SQL,Python,AWS}       ❌ FALSE
@@ -125,6 +125,7 @@ kaggle-> WHERE skills <> ARRAY['Python','Java'];
 
 ### Evaluation
 
+```
     emp_id skills                  Result
   -------- --------------------- ----------
        101 {SQL,Python,AWS}       ✅ TRUE
@@ -132,6 +133,7 @@ kaggle-> WHERE skills <> ARRAY['Python','Java'];
        103 {SQL,Docker}           ✅ TRUE
        104 {AWS,Linux}            ✅ TRUE
        105 {Python,SQL,Docker}    ✅ TRUE
+```
 
 ### Explanation
 
@@ -182,6 +184,7 @@ kaggle-> WHERE skills @> ARRAY['SQL'];
 
 ### Evaluation
 
+```
     emp_id skills                  Result
   -------- --------------------- ----------
        101 {SQL,Python,AWS}       ✅ TRUE
@@ -189,6 +192,7 @@ kaggle-> WHERE skills @> ARRAY['SQL'];
        103 {SQL,Docker}           ✅ TRUE
        104 {AWS,Linux}            ❌ FALSE
        105 {Python,SQL,Docker}    ✅ TRUE
+```
 
 ### Explanation
 
@@ -239,6 +243,7 @@ kaggle-> WHERE ARRAY['SQL'] <@ skills;
 
 ### Evaluation
 
+```
     emp_id skills                  Result
   -------- --------------------- ----------
        101 {SQL,Python,AWS}       ✅ TRUE
@@ -246,6 +251,7 @@ kaggle-> WHERE ARRAY['SQL'] <@ skills;
        103 {SQL,Docker}           ✅ TRUE
        104 {AWS,Linux}            ❌ FALSE
        105 {Python,SQL,Docker}    ✅ TRUE
+```
 
 ### Explanation
 
@@ -297,6 +303,7 @@ kaggle-> WHERE skills && ARRAY['Java','SQL'];
 
 ### Evaluation
 
+```
     emp_id skills                  Result
   -------- --------------------- ----------
        101 {SQL,Python,AWS}       ✅ TRUE
@@ -304,6 +311,7 @@ kaggle-> WHERE skills && ARRAY['Java','SQL'];
        103 {SQL,Docker}           ✅ TRUE
        104 {AWS,Linux}            ❌ FALSE
        105 {Python,SQL,Docker}    ✅ TRUE
+```
 
 ### Explanation
 
