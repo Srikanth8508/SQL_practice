@@ -1,5 +1,3 @@
-Here is the complete guide in a single Markdown block so you can copy and paste it directly:
-
 ```markdown
 # PostgreSQL ARRAY Operators Guide
 
