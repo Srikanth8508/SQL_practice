@@ -1,439 +1,521 @@
-```markdown
-# PostgreSQL ARRAY Operators Guide
+# PostgreSQL JSON / JSONB Operators Guide
 
 ## Sample Setup
 
 ```sql
-kaggle=> CREATE TABLE employee_skills
+kaggle=> CREATE TABLE customer_orders
 (
-    emp_id   INT,
-    emp_name TEXT,
-    skills   TEXT[]
+    order_id INT,
+    customer TEXT,
+    details  JSONB
 );
 CREATE TABLE
 
-kaggle=> INSERT INTO employee_skills VALUES
-(101, 'John',  ARRAY['SQL','Python','AWS']),
-(102, 'Alice', ARRAY['Python','Java']),
-(103, 'David', ARRAY['SQL','Docker']),
-(104, 'Bob',   ARRAY['AWS','Linux']),
-(105, 'Sam',   ARRAY['Python','SQL','Docker']);
-INSERT 0 5
+kaggle=> INSERT INTO customer_orders VALUES
+(1, 'Alice', '{"item": "Laptop", "price": 1200, "specs": {"ram": "16GB", "storage": "512GB"}, "tags": ["tech", "work"], "active": true}'),
+(2, 'Bob',   '{"item": "Monitor", "price": 300, "specs": {"ram": null, "resolution": "4K"}, "tags": ["tech"], "active": false}'),
+(3, 'Charlie', '{"item": "Desk", "price": 150, "specs": {}, "tags": ["home", "furniture"], "active": true}'),
+(4, 'David', '{"item": "Keyboard", "price": 80, "specs": {"switches": "Mechanical"}, "tags": ["tech", "gaming"], "active": true}');
+INSERT 0 4
 
-kaggle=> SELECT * FROM employee_skills;
-
-```
-
-```text
- emp_id | emp_name |        skills        
---------+----------+----------------------
-    101 | John     | {SQL,Python,AWS}
-    102 | Alice    | {Python,Java}
-    103 | David    | {SQL,Docker}
-    104 | Bob      | {AWS,Linux}
-    105 | Sam      | {Python,SQL,Docker}
-(5 rows)
-
-```
-
----
-
-# `=` (Equal)
-
-## Purpose
-
-Checks whether two arrays are exactly identical in elements, order, and length.
-
-## Syntax
-
-```sql
-array1 = array2
-
-```
-
-## Working Example
-
-```sql
-kaggle=> SELECT *
-kaggle-> FROM employee_skills
-kaggle-> WHERE skills = ARRAY['Python','Java'];
+kaggle=> SELECT * FROM customer_orders;
 
 ```
 
 ```text
- emp_id | emp_name |    skills     
---------+----------+---------------
-    102 | Alice    | {Python,Java}
-(1 row)
-
-```
-
-### Evaluation Matrix
-
-```text
- emp_id |        skills        | Result 
---------+----------------------+--------
-    101 | {SQL,Python,AWS}     | FALSE
-    102 | {Python,Java}        | TRUE
-    103 | {SQL,Docker}         | FALSE
-    104 | {AWS,Linux}          | FALSE
-    105 | {Python,SQL,Docker}  | FALSE
-
-```
-
-### Explanation
-
-Returns `TRUE` only when both arrays contain the same elements in the exact same order.
-
-### Failing Example (Order Sensitivity)
-
-```sql
--- Same elements as Alice, but swapped order
-kaggle=> SELECT *
-kaggle-> FROM employee_skills
-kaggle-> WHERE skills = ARRAY['Java','Python'];
-
-```
-
-```text
- emp_id | emp_name | skills 
---------+----------+--------
-(0 rows)
-
-```
-
----
-
-# `<>` (Not Equal)
-
-## Purpose
-
-Returns `TRUE` when two arrays are not identical (differing in elements, element order, or length).
-
-## Syntax
-
-```sql
-array1 <> array2
-
-```
-
-## Working Example
-
-```sql
-kaggle=> SELECT *
-kaggle-> FROM employee_skills
-kaggle-> WHERE skills <> ARRAY['Python','Java'];
-
-```
-
-```text
- emp_id | emp_name |        skills        
---------+----------+----------------------
-    101 | John     | {SQL,Python,AWS}
-    103 | David    | {SQL,Docker}
-    104 | Bob      | {AWS,Linux}
-    105 | Sam      | {Python,SQL,Docker}
+ order_id | customer |                                                       details                                                       
+----------+----------+---------------------------------------------------------------------------------------------------------------------
+        1 | Alice    | {"item": "Laptop", "tags": ["tech", "work"], "price": 1200, "active": true, "specs": {"ram": "16GB", "storage": "512GB"}}
+        2 | Bob      | {"item": "Monitor", "tags": ["tech"], "price": 300, "active": false, "specs": {"ram": null, "resolution": "4K"}}
+        3 | Charlie  | {"item": "Desk", "tags": ["home", "furniture"], "price": 150, "active": true, "specs": {}}
+        4 | David    | {"item": "Keyboard", "tags": ["tech", "gaming"], "price": 80, "active": true, "specs": {"switches": "Mechanical"}}
 (4 rows)
 
 ```
 
-### Evaluation Matrix
-
-```text
- emp_id |        skills        | Result 
---------+----------------------+--------
-    101 | {SQL,Python,AWS}     | TRUE
-    102 | {Python,Java}        | FALSE
-    103 | {SQL,Docker}         | TRUE
-    104 | {AWS,Linux}          | TRUE
-    105 | {Python,SQL,Docker}  | TRUE
-
-```
-
-### Explanation
-
-Returns `TRUE` for every row except the one where the array matches completely.
-
-### Failing Example
-
-```sql
--- Evaluates to FALSE for John because the array is an exact match
-kaggle=> SELECT *
-kaggle-> FROM employee_skills
-kaggle-> WHERE emp_id = 101 AND skills <> ARRAY['SQL','Python','AWS'];
-
-```
-
-```text
- emp_id | emp_name | skills 
---------+----------+--------
-(0 rows)
-
-```
-
 ---
 
-# `@>` (Contains)
+# `->` (Get JSON Object Field by Key or Index)
 
 ## Purpose
 
-Returns `TRUE` when the left array contains **all** elements specified in the right array. Order does not matter.
+Extracts a field from a JSON object (or array element by index) as a **JSON/JSONB object**.
 
 ## Syntax
 
 ```sql
-array1 @> array2
+json_column -> 'key'         -- Extract object key
+json_column -> integer_index -- Extract array element (0-indexed)
 
 ```
 
 ## Working Example
 
 ```sql
-kaggle=> SELECT *
-kaggle-> FROM employee_skills
-kaggle-> WHERE skills @> ARRAY['SQL'];
+kaggle=> SELECT order_id, customer, details -> 'specs' AS specs_json
+kaggle-> FROM customer_orders;
 
 ```
 
 ```text
- emp_id | emp_name |        skills        
---------+----------+----------------------
-    101 | John     | {SQL,Python,AWS}
-    103 | David    | {SQL,Docker}
-    105 | Sam      | {Python,SQL,Docker}
-(3 rows)
-
-```
-
-### Evaluation Matrix
-
-```text
- emp_id |        skills        | Contains ['SQL']? 
---------+----------------------+-------------------
-    101 | {SQL,Python,AWS}     | TRUE
-    102 | {Python,Java}        | FALSE
-    103 | {SQL,Docker}         | TRUE
-    104 | {AWS,Linux}          | FALSE
-    105 | {Python,SQL,Docker}  | TRUE
-
-```
-
-### Explanation
-
-All items in the right-hand array must exist inside the left-hand array.
-
-### Failing Example
-
-```sql
--- Searching for rows containing BOTH SQL and Java
-kaggle=> SELECT *
-kaggle-> FROM employee_skills
-kaggle-> WHERE skills @> ARRAY['SQL','Java'];
-
-```
-
-```text
- emp_id | emp_name | skills 
---------+----------+--------
-(0 rows)
-
-```
-
----
-
-# `<@` (Contained By)
-
-## Purpose
-
-Returns `TRUE` when **all** elements in the left array exist within the right array.
-
-## Syntax
-
-```sql
-array1 <@ array2
-
-```
-
-## Working Example
-
-```sql
--- Find employees whose skills are completely subsetted by this reference set
-kaggle=> SELECT *
-kaggle-> FROM employee_skills
-kaggle-> WHERE skills <@ ARRAY['SQL','Python','AWS','Docker'];
-
-```
-
-```text
- emp_id | emp_name |        skills        
---------+----------+----------------------
-    101 | John     | {SQL,Python,AWS}
-    103 | David    | {SQL,Docker}
-    105 | Sam      | {Python,SQL,Docker}
-(3 rows)
-
-```
-
-### Evaluation Matrix
-
-```text
- emp_id |        skills        | Contained in reference set? 
---------+----------------------+-----------------------------
-    101 | {SQL,Python,AWS}     | TRUE
-    102 | {Python,Java}        | FALSE ('Java' missing)
-    103 | {SQL,Docker}         | TRUE
-    104 | {AWS,Linux}          | FALSE ('Linux' missing)
-    105 | {Python,SQL,Docker}  | TRUE
-
-```
-
-### Explanation
-
-Useful for filtering records that only possess skills from an approved or pre-defined set.
-
-### Failing Example
-
-```sql
--- Alice (Python, Java) is not contained because 'Java' is missing from the right side
-kaggle=> SELECT *
-kaggle-> FROM employee_skills
-kaggle-> WHERE emp_id = 102 
-kaggle->   AND skills <@ ARRAY['SQL','Python','AWS'];
-
-```
-
-```text
- emp_id | emp_name | skills 
---------+----------+--------
-(0 rows)
-
-```
-
----
-
-# `&&` (Overlap)
-
-## Purpose
-
-Returns `TRUE` if the left and right arrays share **at least one** common element.
-
-## Syntax
-
-```sql
-array1 && array2
-
-```
-
-## Working Example
-
-```sql
-kaggle=> SELECT *
-kaggle-> FROM employee_skills
-kaggle-> WHERE skills && ARRAY['Java','SQL'];
-
-```
-
-```text
- emp_id | emp_name |        skills        
---------+----------+----------------------
-    101 | John     | {SQL,Python,AWS}
-    102 | Alice    | {Python,Java}
-    103 | David    | {SQL,Docker}
-    105 | Sam      | {Python,SQL,Docker}
+ order_id | customer |               specs_json               
+----------+----------+----------------------------------------
+        1 | Alice    | {"ram": "16GB", "storage": "512GB"}
+        2 | Bob      | {"ram": null, "resolution": "4K"}
+        3 | Charlie  | {}
+        4 | David    | {"switches": "Mechanical"}
 (4 rows)
 
 ```
 
-### Evaluation Matrix
+### Array Indexing Example
+
+```sql
+kaggle=> SELECT order_id, customer, details -> 'tags' -> 0 AS first_tag_json
+kaggle-> FROM customer_orders;
+
+```
 
 ```text
- emp_id |        skills        | Shares element with ['Java', 'SQL']? 
---------+----------------------+---------------------------------------
-    101 | {SQL,Python,AWS}     | TRUE (SQL)
-    102 | {Python,Java}        | TRUE (Java)
-    103 | {SQL,Docker}         | TRUE (SQL)
-    104 | {AWS,Linux}          | FALSE
-    105 | {Python,SQL,Docker}  | TRUE (SQL)
+ order_id | customer | first_tag_json 
+----------+----------+----------------
+        1 | Alice    | "tech"
+        2 | Bob      | "tech"
+        3 | Charlie  | "home"
+        4 | David    | "tech"
+(4 rows)
 
 ```
 
 ### Explanation
 
-Unlike `@>` which requires *all* targets to match, `&&` acts as an "ANY match" condition.
-
-### Failing Example
-
-```sql
--- Searching for skills that overlap with Go or Rust
-kaggle=> SELECT *
-kaggle-> FROM employee_skills
-kaggle-> WHERE skills && ARRAY['Go','Rust'];
-
-```
-
-```text
- emp_id | emp_name | skills 
---------+----------+--------
-(0 rows)
-
-```
+Notice the quotes around `"tech"` or the JSON object shape `{}` in the output. The `->` operator returns data as **JSON**, meaning string values remain wrapped in double quotes and JSON formatting is preserved.
 
 ---
 
-# `||` (Concatenate)
+# `->>` (Get JSON Object Field as Text)
 
 ## Purpose
 
-Appends or prepends arrays, adding elements together into a single combined array.
+Extracts a field from a JSON object (or array element) as plain **text**.
 
 ## Syntax
 
 ```sql
-array1 || array2
+json_column ->> 'key'
+json_column ->> integer_index
 
 ```
 
 ## Working Example
 
 ```sql
-kaggle=> SELECT emp_id, emp_name, skills || ARRAY['Git'] AS updated_skills
-kaggle-> FROM employee_skills;
+kaggle=> SELECT order_id, customer, details ->> 'item' AS item_name
+kaggle-> FROM customer_orders
+kaggle-> WHERE details ->> 'item' = 'Laptop';
 
 ```
 
 ```text
- emp_id | emp_name |           updated_skills           
---------+----------+------------------------------------
-    101 | John     | {SQL,Python,AWS,Git}
-    102 | Alice    | {Python,Java,Git}
-    103 | David    | {SQL,Docker,Git}
-    104 | Bob      | {AWS,Linux,Git}
-    105 | Sam      | {Python,SQL,Docker,Git}
-(5 rows)
+ order_id | customer | item_name 
+----------+----------+-----------
+        1 | Alice    | Laptop
+(1 row)
+
+```
+
+### Evaluation Matrix (`details ->> 'item'`)
+
+```text
+ order_id | customer | details -> 'item' (JSON) | details ->> 'item' (Text) | Matches 'Laptop'? 
+----------+----------+--------------------------+---------------------------+-------------------
+        1 | Alice    | "Laptop"                 | Laptop                    | TRUE
+        2 | Bob      | "Monitor"                | Monitor                   | FALSE
+        3 | Charlie  | "Desk"                   | Desk                      | FALSE
+        4 | David    | "Keyboard"               | Keyboard                  | FALSE
 
 ```
 
 ### Explanation
 
-`||` is an arithmetic-style operator for arrays (it creates a new value instead of returning boolean `TRUE`/`FALSE`). It can concatenate arrays to arrays or single elements to arrays.
+`->>` strips away JSON quotes and converts the output to native SQL `TEXT`. You must use `->>` (not `->`) when comparing JSON string fields against SQL text values in a `WHERE` clause.
 
-### Edge Case: Concatenating `NULL`
+### Common Mistake
 
 ```sql
--- Concatenating NULL to an array produces NULL in PostgreSQL
-kaggle=> SELECT emp_id, skills || NULL AS result
-kaggle-> FROM employee_skills
-kaggle-> WHERE emp_id = 101;
+-- FAILS to match because "Laptop" (JSON string) != Laptop (SQL text)
+kaggle=> SELECT * FROM customer_orders WHERE details -> 'item' = 'Laptop';
 
 ```
 
 ```text
- emp_id | result 
---------+--------
-    101 | 
+ order_id | customer | details 
+----------+----------+---------
+(0 rows)
+
+```
+
+---
+
+# `#>` (Get Nested JSON Object at Path)
+
+## Purpose
+
+Navigates down a nested JSON path and returns the value as a **JSON/JSONB object**.
+
+## Syntax
+
+```sql
+json_column #> '{path, keys}'
+
+```
+
+## Working Example
+
+```sql
+kaggle=> SELECT order_id, customer, details #> '{specs, ram}' AS ram_json
+kaggle-> FROM customer_orders;
+
+```
+
+```text
+ order_id | customer | ram_json 
+----------+----------+----------
+        1 | Alice    | "16GB"
+        2 | Bob      | null
+        3 | Charlie  | 
+        4 | David    | 
+(4 rows)
+
+```
+
+### Explanation
+
+Returns the targeted property at deep nest levels. Notice how Bob returns explicit JSON `null`, whereas Charlie and David return SQL `NULL` (empty cell) because the `ram` key does not exist in their `specs` object.
+
+---
+
+# `#>>` (Get Nested JSON Field at Path as Text)
+
+## Purpose
+
+Navigates down a nested JSON path and returns the value as plain **text**.
+
+## Syntax
+
+```sql
+json_column #>> '{path, keys}'
+
+```
+
+## Working Example
+
+```sql
+kaggle=> SELECT order_id, customer, details #>> '{specs, ram}' AS ram_text
+kaggle-> FROM customer_orders
+kaggle-> WHERE details #>> '{specs, ram}' IS NOT NULL;
+
+```
+
+```text
+ order_id | customer | ram_text 
+----------+----------+----------
+        1 | Alice    | 16GB
 (1 row)
 
 ```
+
+### Evaluation Matrix (`details #>> '{specs, ram}'`)
+
+```text
+ order_id | customer | #> '{specs, ram}' | #>> '{specs, ram}' | Result / Notes 
+----------+----------+-------------------+--------------------+---------------------------------
+        1 | Alice    | "16GB"            | 16GB               | Evaluates to Text '16GB'
+        2 | Bob      | null              | [NULL]             | Converts JSON null to SQL NULL
+        3 | Charlie  | [NULL]            | [NULL]             | Path doesn't exist
+        4 | David    | [NULL]            | [NULL]             | Path doesn't exist
+
+```
+
+### Explanation
+
+Use `#>>` to extract nested data cleanly as text for filtering, joining, or casting to numeric/date types (e.g., `(details #>> '{price}')::numeric`).
+
+---
+
+# `@>` (JSONB Contains)
+
+## Purpose
+
+Checks if the left JSONB document contains the right JSONB structure (Key-Value pairs or array elements).
+
+## Syntax
+
+```sql
+jsonb_column @> '{"key": "value"}'::jsonb
+
+```
+
+## Working Example
+
+```sql
+-- Find active orders containing the 'tech' tag
+kaggle=> SELECT order_id, customer, details ->> 'item' AS item
+kaggle-> FROM customer_orders
+kaggle-> WHERE details @> '{"active": true, "tags": ["tech"]}';
+
+```
+
+```text
+ order_id | customer |   item   
+----------+----------+----------
+        1 | Alice    | Laptop
+        4 | David    | Keyboard
+(2 rows)
+
+```
+
+### Evaluation Matrix
+
+```text
+ order_id | customer | Contains {"active": true, "tags": ["tech"]}? | Reason 
+----------+----------+----------------------------------------------+----------------------------------
+        1 | Alice    | TRUE                                         | Active is true, tags has 'tech'
+        2 | Bob      | FALSE                                        | Tags has 'tech', but active=false
+        3 | Charlie  | FALSE                                        | Active=true, but missing 'tech'
+        4 | David    | TRUE                                         | Active is true, tags has 'tech'
+
+```
+
+### Explanation
+
+The `@>` operator can match multiple nested criteria simultaneously and takes full advantage of **GIN indexes** for high-performance JSONB querying.
+
+---
+
+# `?` (Key Exists)
+
+## Purpose
+
+Checks whether a top-level **string key** or **array element** exists inside the JSONB document.
+
+## Syntax
+
+```sql
+jsonb_column ? 'key_or_element'
+
+```
+
+## Working Example
+
+```sql
+-- Check if the array inside 'tags' contains the string 'furniture'
+kaggle=> SELECT order_id, customer, details -> 'tags' ? 'furniture' AS sells_furniture
+kaggle-> FROM customer_orders;
+
+```
+
+```text
+ order_id | customer | sells_furniture 
+----------+----------+-----------------
+        1 | Alice    | FALSE
+        2 | Bob      | FALSE
+        3 | Charlie  | TRUE
+        4 | David    | FALSE
+(4 rows)
+
+```
+
+### Explanation
+
+The `?` operator evaluates directly to boolean `TRUE` or `FALSE`. It checks top-level keys inside objects, or direct elements inside arrays.
+
+---
+
+# `?|` (Exist Any)
+
+## Purpose
+
+Returns `TRUE` if **any** of the specified array of keys/strings exist inside the JSONB document.
+
+## Syntax
+
+```sql
+jsonb_column ?| array['key1', 'key2']
+
+```
+
+## Working Example
+
+```sql
+-- Check if tags contain EITHER 'furniture' OR 'gaming'
+kaggle=> SELECT order_id, customer, details ->> 'item' AS item
+kaggle-> FROM customer_orders
+kaggle-> WHERE details -> 'tags' ?| ARRAY['furniture', 'gaming'];
+
+```
+
+```text
+ order_id | customer |   item   
+----------+----------+----------
+        3 | Charlie  | Desk
+        4 | David    | Keyboard
+(2 rows)
+
+```
+
+### Evaluation Matrix
+
+```text
+ order_id | customer | tags                 | Has 'furniture' OR 'gaming'? 
+----------+----------+----------------------+------------------------------
+        1 | Alice    | ["tech", "work"]     | FALSE
+        2 | Bob      | ["tech"]             | FALSE
+        3 | Charlie  | ["home", "furniture"]| TRUE ('furniture')
+        4 | David    | ["tech", "gaming"]   | TRUE ('gaming')
+
+```
+
+---
+
+# `?&` (Exist All)
+
+## Purpose
+
+Returns `TRUE` only if **all** of the specified keys/strings exist inside the JSONB document.
+
+## Syntax
+
+```sql
+jsonb_column ?& array['key1', 'key2']
+
+```
+
+## Working Example
+
+```sql
+-- Find records where tags contain BOTH 'tech' AND 'work'
+kaggle=> SELECT order_id, customer, details ->> 'item' AS item
+kaggle-> FROM customer_orders
+kaggle-> WHERE details -> 'tags' ?& ARRAY['tech', 'work'];
+
+```
+
+```text
+ order_id | customer |  item  
+----------+----------+--------
+        1 | Alice    | Laptop
+(1 row)
+
+```
+
+### Failing Example
+
+```sql
+-- Bob and David have 'tech', but neither has 'work'
+kaggle=> SELECT order_id, customer
+kaggle-> FROM customer_orders
+kaggle-> WHERE order_id IN (2, 4) 
+kaggle->   AND details -> 'tags' ?& ARRAY['tech', 'work'];
+
+```
+
+```text
+ order_id | customer 
+----------+----------
+(0 rows)
+
+```
+
+---
+
+# `-` (Delete Key or Array Element)
+
+## Purpose
+
+Deletes a key (and its value) from a JSON object, or deletes an element from a JSON array by key name or index position.
+
+## Syntax
+
+```sql
+jsonb_column - 'key_to_delete'
+jsonb_column - integer_index
+
+```
+
+## Working Example (Deleting an Object Key)
+
+```sql
+kaggle=> SELECT order_id, details - 'tags' - 'active' AS trimmed_details
+kaggle-> FROM customer_orders
+kaggle-> WHERE order_id = 1;
+
+```
+
+```text
+ order_id |                                   trimmed_details                                   
+----------+-------------------------------------------------------------------------------------
+        1 | {"item": "Laptop", "price": 1200, "specs": {"ram": "16GB", "storage": "512GB"}}
+(1 row)
+
+```
+
+## Working Example (Deleting an Array Element)
+
+```sql
+kaggle=> SELECT order_id, details -> 'tags' AS original_tags, (details -> 'tags') - 0 AS tags_after_delete
+kaggle-> FROM customer_orders
+kaggle-> WHERE order_id = 1;
+
+```
+
+```text
+ order_id |   original_tags   | tags_after_delete 
+----------+-------------------+-------------------
+        1 | ["tech", "work"]  | ["work"]
+(1 row)
+
+```
+
+### Explanation
+
+The `-` operator returns a modified JSONB object without altering the original database state (unless combined with an `UPDATE` statement).
+
+---
+
+# `#-` (Delete Field at Path)
+
+## Purpose
+
+Deletes a deeply nested key or array element at a specified target path.
+
+## Syntax
+
+```sql
+jsonb_column #- '{path, target}'
+
+```
+
+## Working Example
+
+```sql
+kaggle=> SELECT order_id, details #- '{specs, ram}' AS specs_without_ram
+kaggle-> FROM customer_orders
+kaggle-> WHERE order_id = 1;
+
+```
+
+```text
+ order_id |                                                      specs_without_ram                                                      
+----------+-----------------------------------------------------------------------------------------------------------------------------
+        1 | {"item": "Laptop", "tags": ["tech", "work"], "price": 1200, "active": true, "specs": {"storage": "512GB"}}
+(1 row)
+
+```
+
+### Explanation
+
+Notice how `specs` now only contains `"storage": "512GB"`. The targeted `"ram"` key inside the nested object was removed cleanly.
 
 ```
 
