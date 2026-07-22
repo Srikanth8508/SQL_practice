@@ -1,8 +1,3 @@
-Ah, good catch! Because the `JSON` vs `JSONB` comparison section was placed inside a plain code block, your Markdown editor rendered it as raw text rather than formatted headings, tables, and lists.
-
-Here is the **entire document as a single, clean Markdown block** so you can copy and paste it directly. Everything from the operators through the JSON vs JSONB comparison will now render properly as formatted text and tables!
-
-```markdown
 # PostgreSQL JSON / JSONB Operators Guide
 
 ## Sample Setup
