@@ -471,8 +471,8 @@ jsonb_column ? 'key_or_element'
 
 ```sql
 -- Check if the array inside 'tags' contains the string 'furniture'
- SELECT order_id, customer, details -> 'tags' ? 'furniture' AS sells_furniture
- FROM customer_orders;
+SELECT order_id, customer, details -> 'tags' ? 'furniture' AS sells_furniture
+FROM customer_orders;
 
 ```
 
@@ -487,9 +487,31 @@ jsonb_column ? 'key_or_element'
 
 ```
 
-### Explanation
+### Example 2: WHERE Clause Filtering
 
-The `?` operator evaluates directly to boolean `TRUE` or `FALSE`. It checks top-level keys inside objects, or direct elements inside arrays.
+```sql
+-- Filter rows where 'tags' array contains the string 'furniture'
+SELECT order_id, customer, details -> 'tags' AS tags
+FROM customer_orders
+WHERE details -> 'tags' ? 'furniture';
+
+```
+
+```text
+ order_id | customer |         tags          
+----------+----------+-----------------------
+        3 | Charlie  | ["home", "furniture"]
+(1 row)
+
+```
+
+---
+
+## Explanation & Key Notes
+
+1. **Boolean Output:** The `?` operator evaluates directly to boolean `TRUE` (`t`) or `FALSE` (`f`), making it ideal for `WHERE` filters and boolean flag columns in `SELECT`.
+2. **Targets:** It checks top-level keys inside JSON objects or direct string elements inside JSON arrays.
+3. **Data Type Requirement:** The right-hand side of `?` **must be a single text string** (e.g., `'furniture'`).
 
 ---
 
