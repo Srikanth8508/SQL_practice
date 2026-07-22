@@ -1,4 +1,3 @@
-```markdown
 # PostgreSQL ARRAY Operators Guide
 
 ## Sample Setup
