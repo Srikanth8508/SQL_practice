@@ -1,3 +1,8 @@
+Ah, good catch! Because the `JSON` vs `JSONB` comparison section was placed inside a plain code block, your Markdown editor rendered it as raw text rather than formatted headings, tables, and lists.
+
+Here is the **entire document as a single, clean Markdown block** so you can copy and paste it directly. Everything from the operators through the JSON vs JSONB comparison will now render properly as formatted text and tables!
+
+```markdown
 # PostgreSQL JSON / JSONB Operators Guide
 
 ## Sample Setup
@@ -517,8 +522,6 @@ kaggle-> WHERE order_id = 1;
 
 Notice how `specs` now only contains `"storage": "512GB"`. The targeted `"ram"` key inside the nested object was removed cleanly.
 
-```
-
 ---
 
 # `JSON` vs `JSONB`: Key Comparison & Trade-Offs
@@ -533,12 +536,12 @@ PostgreSQL provides two distinct data types for storing JSON data: `JSON` and `J
 ## Direct Comparison Matrix
 
 | Feature / Trait | `JSON` (Text Storage) | `JSONB` (Binary Storage) |
-| :--- | :--- | :--- |
+| --- | --- | --- |
 | **Storage Format** | Plain text string | Decomposed binary format |
 | **Insert Speed** | ⚡ **Faster** (No conversion needed) | 🐢 Slower (Parsing overhead on write) |
 | **Query Speed** | 🐢 Slower (Re-parsed on *every* read) | ⚡ **Faster** (Direct binary traversal) |
 | **Index Support** | Limited (Expression indexes only) | **Full Support** (GIN, btree, hash) |
-| **Operator Support** | Basic (`->`, `->>`, `#>`, `#>>`) | **All Operators** (`@>`, `?`, `?|`, `?&`, `-`, `#-`, etc.) |
+| **Operator Support** | Basic (`->`, `->>`, `#>`, `#>>`) | **All Operators** (`@>`, `?`, `? |
 | **Preserves Whitespace** | ✅ Yes | ❌ No |
 | **Preserves Key Order** | ✅ Yes | ❌ No (Keys are re-ordered internally) |
 | **Duplicate Keys** | ✅ Keeps duplicate keys | ❌ Keeps only the **last** duplicate key value |
@@ -550,10 +553,12 @@ PostgreSQL provides two distinct data types for storing JSON data: `JSON` and `J
 ### 1. `JSON` (Plain Text)
 
 #### **Pros**
+
 * **Exact Fidelity:** Preserves identical formatting, spacing, and key ordering as inserted.
 * **Faster Ingestion:** Excellent for high-throughput write-heavy audit logs or streaming ingestion pipelines where JSON payload processing isn't immediately required.
 
 #### **Cons**
+
 * **Slow Query Processing:** Every query or extraction (`->>`) forces PostgreSQL to re-parse the raw text string from scratch.
 * **No Specialized Indexing:** Cannot be indexed with GIN indexes for fast key/value searches.
 * **No Advanced Operators:** Specialized JSON operators like containment (`@>`) or key check (`?`) do not work on raw `JSON`.
@@ -563,12 +568,14 @@ PostgreSQL provides two distinct data types for storing JSON data: `JSON` and `J
 ### 2. `JSONB` (Binary Format)
 
 #### **Pros**
+
 * **High Query Performance:** Data is pre-parsed on write, making field extraction and deeply nested queries significantly faster.
 * **GIN Indexing:** Supports GIN (Generalized Inverted Index) indexes, enabling millisecond lookup times across millions of records for conditions like `WHERE details @> '{"active": true}'`.
 * **Richer Operator Support:** Unlocks the full suit of path manipulation, containment, and search operators.
 * **Storage Efficiency:** Strips duplicate keys and unnecessary whitespace, saving space on large datasets.
 
 #### **Cons**
+
 * **Write Overhead:** Parsing, validating, and converting raw JSON into binary format incurs a slight CPU penalty during `INSERT` and `UPDATE` operations.
 * **Does Not Preserve Formatting:** Key ordering is altered (PostgreSQL sorts keys by length then alphabetically), and indentations/spaces are discarded.
 
@@ -576,7 +583,9 @@ PostgreSQL provides two distinct data types for storing JSON data: `JSON` and `J
 
 ## When to Use Which?
 
-> 💡 **Rule of Thumb:** **Use `JSONB` by default for almost all use cases.** 
+> 💡 **Rule of Thumb:** **Use `JSONB` by default for almost all use cases.**
 > Use plain `JSON` only if you have strict compliance requirements to preserve original raw text formatting or if write speed is your sole bottleneck.
+
+```
 
 ```
