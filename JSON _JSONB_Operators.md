@@ -237,90 +237,170 @@ The `->>` operator strips away JSON quotes and outputs native **SQL text**, allo
 
 ```
 ---
-
 # `#>` (Get Nested JSON Object at Path)
 
 ## Purpose
 
-Navigates down a nested JSON path and returns the value as a **JSON/JSONB object**.
+The `#>` operator retrieves a value from a **nested JSON path** and returns it as **JSON/JSONB**.
 
-## Syntax
-
-```sql
-json_column #> '{path, keys}'
-
-```
-
-## Working Example
-
-```sql
- SELECT order_id, customer, details #> '{specs, ram}' AS ram_json
- FROM customer_orders;
-
-```
-
-```text
- order_id | customer | ram_json 
-----------+----------+----------
-        1 | Alice    | "16GB"
-        2 | Bob      | null
-        3 | Charlie  | 
-        4 | David    | 
-(4 rows)
-
-```
-
-### Explanation
-
-Returns the targeted property at deep nest levels. Notice how Bob returns explicit JSON `null`, whereas Charlie and David return SQL `NULL` (empty cell) because the `ram` key does not exist in their `specs` object.
+It is useful when the value is inside multiple levels of a JSON object.
 
 ---
 
-# `#>>` (Get Nested JSON Field at Path as Text)
-
-## Purpose
-
-Navigates down a nested JSON path and returns the value as plain **text**.
-
 ## Syntax
 
 ```sql
-json_column #>> '{path, keys}'
-
+json_column #> '{key1,key2,...}'
 ```
+
+---
 
 ## Working Example
 
 ```sql
- SELECT order_id, customer, details #>> '{specs, ram}' AS ram_text
- FROM customer_orders
- WHERE details #>> '{specs, ram}' IS NOT NULL;
-
+SELECT
+    order_id,
+    customer,
+    details #> '{specs,ram}' AS ram_json
+FROM customer_orders;
 ```
 
 ```text
- order_id | customer | ram_text 
+ order_id | customer | ram_json
+----------+----------+----------
+        1 | Alice    | "16GB"
+        2 | Bob      | null
+        3 | Charlie  |
+        4 | David    |
+(4 rows)
+```
+
+---
+
+## Equivalent Query Using `->`
+
+```sql
+SELECT
+    order_id,
+    customer,
+    details -> 'specs' -> 'ram' AS ram_json
+FROM customer_orders;
+```
+
+The output is exactly the same.
+
+---
+
+## Explanation
+
+Both queries return the same JSON value.
+
+The only difference is how the path is written.
+
+| Operator | Navigation Style |
+|----------|------------------|
+| `->` | One level at a time |
+| `#>` | Entire path in one operator |
+
+Example:
+
+```sql
+details -> 'specs' -> 'ram'
+```
+
+is equivalent to
+
+```sql
+details #> '{specs,ram}'
+```
+
+---
+
+# `#>>` (Get Nested JSON Field as Text)
+
+## Purpose
+
+The `#>>` operator retrieves a value from a **nested JSON path** and returns it as **plain text**.
+
+---
+
+## Syntax
+
+```sql
+json_column #>> '{key1,key2,...}'
+```
+
+---
+
+## Working Example
+
+```sql
+SELECT
+    order_id,
+    customer,
+    details #>> '{specs,ram}' AS ram_text
+FROM customer_orders;
+```
+
+```text
+ order_id | customer | ram_text
 ----------+----------+----------
         1 | Alice    | 16GB
-(1 row)
-
+        2 | Bob      |
+        3 | Charlie  |
+        4 | David    |
+(4 rows)
 ```
 
-### Evaluation Matrix (`details #>> '{specs, ram}'`)
+---
 
-```text
- order_id | customer | #> '{specs, ram}' | #>> '{specs, ram}' | Result / Notes 
-----------+----------+-------------------+--------------------+---------------------------------
-        1 | Alice    | "16GB"            | 16GB               | Evaluates to Text '16GB'
-        2 | Bob      | null              | [NULL]             | Converts JSON null to SQL NULL
-        3 | Charlie  | [NULL]            | [NULL]             | Path doesn't exist
-        4 | David    | [NULL]            | [NULL]             | Path doesn't exist
+## Equivalent Query Using `->>`
 
+```sql
+SELECT
+    order_id,
+    customer,
+    details -> 'specs' ->> 'ram' AS ram_text
+FROM customer_orders;
 ```
 
-### Explanation
+The output is exactly the same.
 
-Use `#>>` to extract nested data cleanly as text for filtering, joining, or casting to numeric/date types (e.g., `(details #>> '{price}')::numeric`).
+---
+
+## Explanation
+
+Both queries return the same text value.
+
+The only difference is how the path is written.
+
+| Operator | Navigation Style |
+|----------|------------------|
+| `->>` | One level at a time |
+| `#>>` | Entire path in one operator |
+
+Example:
+
+```sql
+details -> 'specs' ->> 'ram'
+```
+
+is equivalent to
+
+```sql
+details #>> '{specs,ram}'
+```
+
+---
+
+# Comparison of All Four Operators
+
+| Operator | Returns | Used For | Example |
+|----------|----------|----------|---------|
+| `->` | JSON | Access one key/index at a time | `details -> 'specs' -> 'ram'` |
+| `#>` | JSON | Access a nested path in one operator | `details #> '{specs,ram}'` |
+| `->>` | TEXT | Access one key/index at a time and return text | `details -> 'specs' ->> 'ram'` |
+| `#>>` | TEXT | Access a nested path in one operator and return text | `details #>> '{specs,ram}'` |
 
 ---
 
