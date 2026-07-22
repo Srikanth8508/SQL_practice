@@ -3,7 +3,7 @@
 ## Sample Setup
 
 ```sql
-kaggle=> CREATE TABLE employee_skills
+ CREATE TABLE employee_skills
 (
     emp_id   INT,
     emp_name TEXT,
@@ -11,7 +11,7 @@ kaggle=> CREATE TABLE employee_skills
 );
 CREATE TABLE
 
-kaggle=> INSERT INTO employee_skills VALUES
+ INSERT INTO employee_skills VALUES
 (101, 'John',  ARRAY['SQL','Python','AWS']),
 (102, 'Alice', ARRAY['Python','Java']),
 (103, 'David', ARRAY['SQL','Docker']),
@@ -19,7 +19,7 @@ kaggle=> INSERT INTO employee_skills VALUES
 (105, 'Sam',   ARRAY['Python','SQL','Docker']);
 INSERT 0 5
 
-kaggle=> SELECT * FROM employee_skills;
+ SELECT * FROM employee_skills;
 
 ```
 
@@ -53,9 +53,9 @@ array1 = array2
 ## Working Example
 
 ```sql
-kaggle=> SELECT *
-kaggle-> FROM employee_skills
-kaggle-> WHERE skills = ARRAY['Python','Java'];
+ SELECT *
+ FROM employee_skills
+ WHERE skills = ARRAY['Python','Java'];
 
 ```
 
@@ -88,9 +88,9 @@ Returns `TRUE` only when both arrays contain the same elements in the exact same
 
 ```sql
 -- Same elements as Alice, but swapped order
-kaggle=> SELECT *
-kaggle-> FROM employee_skills
-kaggle-> WHERE skills = ARRAY['Java','Python'];
+ SELECT *
+ FROM employee_skills
+ WHERE skills = ARRAY['Java','Python'];
 
 ```
 
@@ -119,9 +119,9 @@ array1 <> array2
 ## Working Example
 
 ```sql
-kaggle=> SELECT *
-kaggle-> FROM employee_skills
-kaggle-> WHERE skills <> ARRAY['Python','Java'];
+ SELECT *
+ FROM employee_skills
+ WHERE skills <> ARRAY['Python','Java'];
 
 ```
 
@@ -157,9 +157,9 @@ Returns `TRUE` for every row except the one where the array matches completely.
 
 ```sql
 -- Evaluates to FALSE for John because the array is an exact match
-kaggle=> SELECT *
-kaggle-> FROM employee_skills
-kaggle-> WHERE emp_id = 101 AND skills <> ARRAY['SQL','Python','AWS'];
+ SELECT *
+ FROM employee_skills
+ WHERE emp_id = 101 AND skills <> ARRAY['SQL','Python','AWS'];
 
 ```
 
@@ -188,9 +188,9 @@ array1 @> array2
 ## Working Example
 
 ```sql
-kaggle=> SELECT *
-kaggle-> FROM employee_skills
-kaggle-> WHERE skills @> ARRAY['SQL'];
+ SELECT *
+ FROM employee_skills
+ WHERE skills @> ARRAY['SQL'];
 
 ```
 
@@ -225,9 +225,9 @@ All items in the right-hand array must exist inside the left-hand array.
 
 ```sql
 -- Searching for rows containing BOTH SQL and Java
-kaggle=> SELECT *
-kaggle-> FROM employee_skills
-kaggle-> WHERE skills @> ARRAY['SQL','Java'];
+ SELECT *
+ FROM employee_skills
+ WHERE skills @> ARRAY['SQL','Java'];
 
 ```
 
@@ -257,9 +257,9 @@ array1 <@ array2
 
 ```sql
 -- Find employees whose skills are completely subsetted by this reference set
-kaggle=> SELECT *
-kaggle-> FROM employee_skills
-kaggle-> WHERE skills <@ ARRAY['SQL','Python','AWS','Docker'];
+ SELECT *
+ FROM employee_skills
+ WHERE skills <@ ARRAY['SQL','Python','AWS','Docker'];
 
 ```
 
@@ -294,10 +294,10 @@ Useful for filtering records that only possess skills from an approved or pre-de
 
 ```sql
 -- Alice (Python, Java) is not contained because 'Java' is missing from the right side
-kaggle=> SELECT *
-kaggle-> FROM employee_skills
-kaggle-> WHERE emp_id = 102 
-kaggle->   AND skills <@ ARRAY['SQL','Python','AWS'];
+ SELECT *
+ FROM employee_skills
+ WHERE emp_id = 102 
+   AND skills <@ ARRAY['SQL','Python','AWS'];
 
 ```
 
@@ -326,9 +326,9 @@ array1 && array2
 ## Working Example
 
 ```sql
-kaggle=> SELECT *
-kaggle-> FROM employee_skills
-kaggle-> WHERE skills && ARRAY['Java','SQL'];
+ SELECT *
+ FROM employee_skills
+ WHERE skills && ARRAY['Java','SQL'];
 
 ```
 
@@ -364,9 +364,9 @@ Unlike `@>` which requires *all* targets to match, `&&` acts as an "ANY match" c
 
 ```sql
 -- Searching for skills that overlap with Go or Rust
-kaggle=> SELECT *
-kaggle-> FROM employee_skills
-kaggle-> WHERE skills && ARRAY['Go','Rust'];
+ SELECT *
+ FROM employee_skills
+ WHERE skills && ARRAY['Go','Rust'];
 
 ```
 
@@ -395,8 +395,8 @@ array1 || array2
 ## Working Example
 
 ```sql
-kaggle=> SELECT emp_id, emp_name, skills || ARRAY['Git'] AS updated_skills
-kaggle-> FROM employee_skills;
+ SELECT emp_id, emp_name, skills || ARRAY['Git'] AS updated_skills
+ FROM employee_skills;
 
 ```
 
@@ -420,9 +420,9 @@ kaggle-> FROM employee_skills;
 
 ```sql
 -- Concatenating NULL to an array produces NULL in PostgreSQL
-kaggle=> SELECT emp_id, skills || NULL AS result
-kaggle-> FROM employee_skills
-kaggle-> WHERE emp_id = 101;
+ SELECT emp_id, skills || NULL AS result
+ FROM employee_skills
+ WHERE emp_id = 101;
 
 ```
 
