@@ -234,15 +234,15 @@ The `WHERE` clause keeps only rows where the position is not `NULL`.
 
 ---
 
-# Comparison
+## Performance Comparison
 
-| Method | Best Use Case | GIN Index Support | 
-|---------|---------------|:-----------------:|
-| `@>` | Check whether an array contains one or more values | ✅ | 
-| `ANY()` | Check whether a single value exists | ❌ |
-| `&&` | Check whether two arrays have any common elements | ✅ | 
-| `UNNEST()` | Convert arrays into rows for analysis or joins | ❌ |
-| `ARRAY_POSITION()` | Find the position of an element in an array | ❌ |
+| Method | Search Type | GIN Index Support | Execution Time | Relative Performance |
+|--------|-------------|:-----------------:|---------------:|:--------------------:|
+| `ANY()` | Single value lookup | No | 5.351 ms | 100% |
+| `&&` | Match any value from multiple elements | Yes | 9.497 ms | 56% |
+| `ARRAY_POSITION()` | Find the position of an element in an array | No | 11.825 ms | 45% |
+| `@>` | Check whether an array contains one or more specified values | Yes | 21.397 ms | 25% |
+| `UNNEST()` | Expand array elements into rows for filtering and analysis | No | 22.955 ms | 23% |
 
 ---
 
