@@ -113,6 +113,8 @@ Checks whether two arrays have at least one common element.
 ## Query
 
 ```sql
+SELECT *
+FROM patent_1.patent_inventor_array
 WHERE inventors && ARRAY[
     'Inventor_00467',
     'Inventor_00891',
