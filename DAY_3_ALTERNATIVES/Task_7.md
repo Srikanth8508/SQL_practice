@@ -176,15 +176,13 @@ The old key is deleted and recreated.
 - Less efficient than `jsonb_set()`.
 
 ---
-
 # Performance Comparison
 
 | Method | Purpose | Updates Nested Key | Relative Performance |
-|----------------------|---------------------------------|:------------------:|--------------------:|
+|-----------------------|--------------------------|:------------------:|--------------------:|
 | `jsonb_set()` | Update an existing key | Yes | **95–100%** |
-| `||` Concatenation | Replace or add key | No | **90–95%** |
-| `-` + `||` | Remove and recreate key | No | **80–90%** |
-
+| Concatenation (`\|\|`) | Replace or add key | No | **90–95%** |
+| Remove (`-`) + Concatenation (`\|\|`) | Remove and recreate key | No | **80–90%** |
 ---
 
 # Recommendation
