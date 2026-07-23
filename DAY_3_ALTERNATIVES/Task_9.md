@@ -1,4 +1,4 @@
-# Generate a Structured JSON Document for Each Patent
+<img width="1513" height="564" alt="Screenshot 2026-07-23 at 6 40 27 PM" src="https://github.com/user-attachments/assets/87c127e2-b131-4fa0-9431-88d8111ef7f8" /># Generate a Structured JSON Document for Each Patent
 
 ## Objective
 
@@ -20,7 +20,9 @@ This document compares different aggregation methods available in PostgreSQL.
 SELECT * FROM patents.patents_training LIMIT 5;
 ```
 
-> **Output:** Attach screenshot here.
+> **Output:** 
+
+<img width="1513" height="564" alt="Screenshot 2026-07-23 at 6 40 27 PM" src="https://github.com/user-attachments/assets/bbe3767b-b663-4166-a7ee-9769199a1b88" />
 
 ---
 
@@ -30,7 +32,9 @@ SELECT * FROM patents.patents_training LIMIT 5;
 SELECT * FROM patents.patent_inventors LIMIT 5;
 ```
 
-> **Output:** Attach screenshot here.
+> **Output:** 
+
+<img width="434" height="186" alt="Screenshot 2026-07-23 at 6 40 47 PM" src="https://github.com/user-attachments/assets/f4ed60a1-95f2-4be9-a8b2-3ab815fb6e78" />
 
 ---
 
@@ -56,7 +60,10 @@ GROUP BY
 LIMIT 5;
 ```
 
-> **Output:** Attach screenshot here.
+> **Output:** 
+
+<img width="1405" height="550" alt="Screenshot 2026-07-23 at 6 33 46 PM" src="https://github.com/user-attachments/assets/34c01915-0057-4b2e-b2b9-02227aa993f1" />
+
 
 ## Query Explanation
 
@@ -89,15 +96,6 @@ Joins patents with their inventors using `publication_number`.
 
 ---
 
-### `GROUP BY`
-
-Groups all inventors belonging to the same patent.
-
----
-
-### `LIMIT 5`
-
-Returns the first five patents.
 
 ## Advantages
 
@@ -130,7 +128,10 @@ GROUP BY
 LIMIT 5;
 ```
 
-> **Output:** Attach screenshot here.
+> **Output:**
+
+<img width="1403" height="566" alt="Screenshot 2026-07-23 at 6 33 59 PM" src="https://github.com/user-attachments/assets/5f9d2681-d558-45bb-8919-8188f366eb4f" />
+
 
 ## Query Explanation
 
@@ -173,7 +174,10 @@ GROUP BY
 LIMIT 5;
 ```
 
-> **Output:** Attach screenshot here.
+> **Output:** 
+
+<img width="1410" height="547" alt="Screenshot 2026-07-23 at 6 34 13 PM" src="https://github.com/user-attachments/assets/9a606da0-d856-4ee4-a57a-911dff664a50" />
+
 
 ## Query Explanation
 
@@ -221,7 +225,10 @@ GROUP BY
 LIMIT 5;
 ```
 
-> **Output:** Attach screenshot here.
+> **Output:** 
+
+<img width="1415" height="548" alt="Screenshot 2026-07-23 at 6 34 31 PM" src="https://github.com/user-attachments/assets/e60da30f-8fd2-4dd1-ac91-73fa9644908f" />
+
 
 ## Query Explanation
 
@@ -271,7 +278,10 @@ GROUP BY
 LIMIT 5;
 ```
 
-> **Output:** Attach screenshot here.
+> **Output:**
+
+<img width="1920" height="594" alt="Screenshot 2026-07-23 at 6 34 55 PM" src="https://github.com/user-attachments/assets/71b68c63-3430-442f-ac0b-f48686428be9" />
+
 
 ## Query Explanation
 
@@ -343,7 +353,10 @@ GROUP BY
 LIMIT 5;
 ```
 
-> **Output:** Attach screenshot here.
+> **Output:** 
+
+<img width="1920" height="603" alt="Screenshot 2026-07-23 at 6 35 13 PM" src="https://github.com/user-attachments/assets/6c0d3860-0fb4-471f-8bf8-ecdb7b47342a" />
+
 
 ## Query Explanation
 
