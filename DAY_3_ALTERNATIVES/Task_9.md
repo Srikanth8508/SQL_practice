@@ -1,5 +1,3 @@
-<img width="1513" height="564" alt="Screenshot 2026-07-23 at 6 40 27 PM" src="https://github.com/user-attachments/assets/87c127e2-b131-4fa0-9431-88d8111ef7f8" /># Generate a Structured JSON Document for Each Patent
-
 ## Objective
 
 Generate a structured document for each patent containing:
