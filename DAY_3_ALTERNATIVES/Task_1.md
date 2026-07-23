@@ -8,27 +8,6 @@ The examples below create different representations of the same data.
 
 ---
 
-# Sample Source Table
-
-```sql
-SELECT * FROM patents.patent_inventors LIMIT 8;
-```
-
-| publication_number | inventor_name |
-|--------------------|---------------|
-| US100001           | Alice         |
-| US100001           | Bob           |
-| US100001           | David         |
-| US100002           | Charlie       |
-| US100002           | Emma          |
-| US100003           | Frank         |
-| US100003           | Grace         |
-| US100003           | Henry         |
-
-Notice that each inventor is stored in a separate row.
-
----
-
 # 1. ARRAY_AGG() (Recommended)
 
 ## Purpose
@@ -49,19 +28,8 @@ GROUP BY publication_number
 LIMIT 10000;
 ```
 
-## Query Explanation
+<img width="727" height="267" alt="Screenshot 2026-07-23 at 11 29 19 AM" src="https://github.com/user-attachments/assets/f99892f3-d91f-41db-96a4-73a99e1f537a" />
 
-### CREATE TABLE ... AS
-
-Creates a new table and stores the query result.
-
----
-
-### publication_number
-
-Groups inventors belonging to the same patent.
-
----
 
 ### ARRAY_AGG(inventor_name ORDER BY inventor_name)
 
@@ -70,28 +38,6 @@ Collects all inventor names into one PostgreSQL array.
 The `ORDER BY` inside `ARRAY_AGG()` sorts inventor names alphabetically before creating the array.
 
 Without `ORDER BY`, the order may vary.
-
----
-
-### GROUP BY publication_number
-
-Creates one output row for each patent.
-
----
-
-### LIMIT 10000
-
-Stores only the first 10,000 grouped patents.
-
----
-
-## Sample Output
-
-| publication_number | inventors |
-|--------------------|--------------------------------|
-| US100001 | {Alice,Bob,David} |
-| US100002 | {Charlie,Emma} |
-| US100003 | {Frank,Grace,Henry} |
 
 ---
 
@@ -123,6 +69,8 @@ FROM patents.patent_inventors
 GROUP BY publication_number
 LIMIT 10000;
 ```
+<img width="708" height="267" alt="Screenshot 2026-07-23 at 11 29 40 AM" src="https://github.com/user-attachments/assets/e727b8fd-171f-4549-9b2c-d822c4b9ae4f" />
+
 
 ## Query Explanation
 
@@ -131,16 +79,6 @@ LIMIT 10000;
 - Combines inventor names into one text value.
 - `', '` is the separator.
 - `ORDER BY` sorts inventor names before joining.
-
----
-
-## Sample Output
-
-| publication_number | inventors |
-|--------------------|-------------------------|
-| US100001 | Alice, Bob, David |
-| US100002 | Charlie, Emma |
-| US100003 | Frank, Grace, Henry |
 
 ---
 
@@ -179,21 +117,14 @@ GROUP BY publication_number
 LIMIT 10000;
 ```
 
+<img width="778" height="264" alt="Screenshot 2026-07-23 at 11 29 24 AM" src="https://github.com/user-attachments/assets/8875f2e8-42c6-4c13-bf28-d03ab47d2772" />
+
+
 ## Query Explanation
 
 ### JSON_AGG(inventor_name ORDER BY inventor_name)
 
 Creates a JSON array containing inventor names.
-
----
-
-## Sample Output
-
-| publication_number | inventors |
-|--------------------|------------------------------------|
-| US100001 | ["Alice","Bob","David"] |
-| US100002 | ["Charlie","Emma"] |
-| US100003 | ["Frank","Grace","Henry"] |
 
 ---
 
@@ -232,6 +163,8 @@ GROUP BY publication_number
 LIMIT 10000;
 ```
 
+<img width="771" height="266" alt="Screenshot 2026-07-23 at 11 29 33 AM" src="https://github.com/user-attachments/assets/47426234-29a7-4cbb-8d2f-1403836a5ddb" />
+
 ## Query Explanation
 
 ### JSONB_AGG(inventor_name ORDER BY inventor_name)
@@ -239,16 +172,6 @@ LIMIT 10000;
 Creates a JSONB array.
 
 JSONB is stored in a binary format that supports indexing and faster processing.
-
----
-
-## Sample Output
-
-| publication_number | inventors |
-|--------------------|------------------------------------|
-| US100001 | ["Alice","Bob","David"] |
-| US100002 | ["Charlie","Emma"] |
-| US100003 | ["Frank","Grace","Henry"] |
 
 Although the output looks like JSON, PostgreSQL stores it internally as JSONB.
 
