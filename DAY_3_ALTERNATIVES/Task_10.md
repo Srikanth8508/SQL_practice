@@ -70,6 +70,50 @@ Uses PostgreSQL JSONB functions to build the complete hierarchy.
 - `jsonb_agg()` creates JSON arrays.
 - Inventors are also stored as JSON arrays.
 
+```sql
+WITH ranked_patents AS
+(
+    SELECT
+        *,
+        ROW_NUMBER() OVER (
+            PARTITION BY EXTRACT(YEAR FROM publication_date)
+            ORDER BY publication_number
+        ) AS rn
+    FROM patents.patents_training
+),
+
+sample AS
+(
+    SELECT *
+    FROM ranked_patents
+    WHERE rn <= 10
+)
+
+SELECT
+    jsonb_build_object(
+        'year',
+        EXTRACT(YEAR FROM publication_date),
+
+        'patents',
+        jsonb_agg(
+            jsonb_build_object(
+                'publication_number', publication_number,
+                'title', title,
+                'inventors',
+                (
+                    SELECT jsonb_agg(inventor_name ORDER BY inventor_order)
+                    FROM patents.patent_inventors pi
+                    WHERE pi.publication_number = s.publication_number
+                )
+            )
+        )
+    ) AS patent_hierarchy
+FROM sample s
+GROUP BY EXTRACT(YEAR FROM publication_date)
+ORDER BY EXTRACT(YEAR FROM publication_date);
+
+```
+
 ### Advantages
 
 - Recommended PostgreSQL approach.
@@ -99,6 +143,43 @@ Production applications where JSON will be searched, filtered, or updated later.
 
 Same hierarchy as Option 1, but produces **JSON** instead of **JSONB**.
 
+```sql
+
+WITH ranked_patents AS
+(
+    SELECT *,
+           ROW_NUMBER() OVER
+           (
+               PARTITION BY EXTRACT(YEAR FROM publication_date)
+               ORDER BY publication_number
+           ) AS rn
+    FROM patents.patents_training
+)
+
+SELECT
+    json_build_object
+    (
+        'year', EXTRACT(YEAR FROM publication_date),
+        'patents',
+        json_agg
+        (
+            json_build_object
+            (
+                'publication_number', publication_number,
+                'title', title,
+                'inventors',
+                (
+                    SELECT json_agg(inventor_name ORDER BY inventor_order)
+                    FROM patents.patent_inventors pi
+                    WHERE pi.publication_number = rp.publication_number
+                )
+            )
+        )
+    ) AS patent_hierarchy
+FROM ranked_patents rp
+WHERE rn <= 10
+GROUP BY EXTRACT(YEAR FROM publication_date);
+```
 ### Advantages
 
 - Simple to understand.
@@ -126,10 +207,43 @@ Returning JSON directly to client applications without modifying it later.
 
 Inventors are collected using PostgreSQL arrays instead of JSON arrays.
 
-Example
+```sql
 
-```text
-{"John","David","Steve"}
+WITH ranked_patents AS
+(
+    SELECT *,
+           ROW_NUMBER() OVER
+           (
+               PARTITION BY EXTRACT(YEAR FROM publication_date)
+               ORDER BY publication_number
+           ) AS rn
+    FROM patents.patents_training
+)
+
+SELECT
+    jsonb_build_object
+    (
+        'year', EXTRACT(YEAR FROM publication_date),
+        'patents',
+        jsonb_agg
+        (
+            jsonb_build_object
+            (
+                'publication_number', publication_number,
+                'title', title,
+                'inventors',
+                (
+                    SELECT array_agg(inventor_name ORDER BY inventor_order)
+                    FROM patents.patent_inventors pi
+                    WHERE pi.publication_number = rp.publication_number
+                )
+            )
+        )
+    ) AS patent_hierarchy
+FROM ranked_patents rp
+WHERE rn <= 10
+GROUP BY EXTRACT(YEAR FROM publication_date);
+
 ```
 
 ### Advantages
@@ -159,10 +273,43 @@ Internal PostgreSQL processing where arrays are frequently used.
 
 Inventors are combined into one comma-separated string.
 
-Example
+```sql
 
-```text
-John, David, Steve
+WITH ranked_patents AS
+(
+    SELECT *,
+           ROW_NUMBER() OVER
+           (
+               PARTITION BY EXTRACT(YEAR FROM publication_date)
+               ORDER BY publication_number
+           ) AS rn
+    FROM patents.patents_training
+)
+
+SELECT
+    jsonb_build_object
+    (
+        'year', EXTRACT(YEAR FROM publication_date),
+        'patents',
+        jsonb_agg
+        (
+            jsonb_build_object
+            (
+                'publication_number', publication_number,
+                'title', title,
+                'inventors',
+                (
+                    SELECT string_agg(inventor_name, ', ' ORDER BY inventor_order)
+                    FROM patents.patent_inventors pi
+                    WHERE pi.publication_number = rp.publication_number
+                )
+            )
+        )
+    ) AS patent_hierarchy
+FROM ranked_patents rp
+WHERE rn <= 10
+GROUP BY EXTRACT(YEAR FROM publication_date);
+
 ```
 
 ### Advantages
@@ -196,13 +343,48 @@ Automatically converts an entire SQL row into a JSON object.
 Instead of writing
 
 ```sql
-json_build_object
+
+WITH ranked_patents AS
 (
-    'publication_number',
-    publication_number,
-    'title',
-    title
+    SELECT *,
+           ROW_NUMBER() OVER
+           (
+               PARTITION BY EXTRACT(YEAR FROM publication_date)
+               ORDER BY publication_number
+           ) AS rn
+    FROM patents.patents_training
 )
+
+SELECT
+    json_build_object
+    (
+        'year', EXTRACT(YEAR FROM publication_date),
+        'patents',
+        json_agg
+        (
+            row_to_json
+            (
+                (
+                    SELECT x
+                    FROM
+                    (
+                        SELECT
+                            publication_number,
+                            title,
+                            (
+                                SELECT json_agg(inventor_name ORDER BY inventor_order)
+                                FROM patents.patent_inventors pi
+                                WHERE pi.publication_number = rp.publication_number
+                            ) AS inventors
+                    ) x
+                )
+            )
+        )
+    ) AS patent_hierarchy
+FROM ranked_patents rp
+WHERE rn <= 10
+GROUP BY EXTRACT(YEAR FROM publication_date);
+
 ```
 
 you simply convert the whole row.
@@ -237,9 +419,45 @@ Converts an entire PostgreSQL row into JSONB and then appends additional fields.
 Example
 
 ```sql
-to_jsonb(p)
-||
-jsonb_build_object(...)
+
+WITH ranked_patents AS
+(
+    SELECT
+        publication_number,
+        title,
+        EXTRACT(YEAR FROM publication_date) AS patent_year,
+        ROW_NUMBER() OVER
+        (
+            PARTITION BY EXTRACT(YEAR FROM publication_date)
+            ORDER BY publication_number
+        ) AS rn
+    FROM patents.patents_training
+)
+
+SELECT
+    jsonb_build_object
+    (
+        'year', patent_year,
+        'patents',
+        jsonb_agg
+        (
+            to_jsonb(p)
+            ||
+            jsonb_build_object
+            (
+                'inventors',
+                (
+                    SELECT jsonb_agg(inventor_name ORDER BY inventor_order)
+                    FROM patents.patent_inventors pi
+                    WHERE pi.publication_number = p.publication_number
+                )
+            )
+        )
+    ) AS patent_hierarchy
+FROM ranked_patents p
+WHERE rn <= 10
+GROUP BY patent_year;
+
 ```
 
 ### Advantages
