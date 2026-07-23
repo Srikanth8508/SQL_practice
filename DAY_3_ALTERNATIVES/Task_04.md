@@ -180,10 +180,11 @@ LIMIT 20;
 
 ```
 ---
-
+```
 # Recommendation
 
 - Use `&&` when the inventors are stored as arrays.
 - Use `EXISTS` when more flexible matching logic is required.
 - Use `UNNEST()` for row-wise analysis or learning purposes.
 - Use the normalized `patent_inventors` table when the data is already stored in one row per inventor.
+```
