@@ -170,14 +170,15 @@ LIMIT 20;
 
 ## Performance Comparison
 
-| Method | Description | Uses Arrays | Execution Time | Relative Performance | Recommended Use Case |
-|---------|-------------|:-----------:|---------------:|:--------------------:|----------------------|
-| `&&` | Finds rows where two arrays have at least one common element (overlap search). | Yes | 25.889 ms | 100% | Best choice for searching array columns using a GIN index. |
-| `UNNEST()` | Expands array elements into rows before filtering or processing. | Yes | 68.350 ms | 38% | Suitable for reporting, analysis, and row-level processing. |
-| `EXISTS` + `UNNEST()` | Checks for matching elements by expanding arrays inside an `EXISTS` subquery. | Yes | 1303.750 ms | 2% | Alternative when complex filtering logic is required. |
-| Join original `patent_inventors` table | Searches the normalized inventor table using a join instead of arrays. | No | 1393.213 ms | 2% | Suitable when working with the normalized relational model rather than array columns. |
+| Method | Uses Arrays | Execution Time | Relative Performance | Recommended Use Case |
+|---------|:-----------:|---------------:|:--------------------:|----------------------|
+| `&&` | Yes | 25.889 ms | 100% | Best choice for searching array columns using a GIN index. |
+| `UNNEST()` | Yes | 68.350 ms | 38% | Reporting, analysis, and row-level processing. |
+| `EXISTS` + `UNNEST()` | Yes | 1303.750 ms | 2% | Complex filtering logic using array elements. |
+| Join original `patent_inventors` table | No | 1393.213 ms | 2% | Queries against the normalized relational table. |
 
 
+```
 ---
 
 # Recommendation
