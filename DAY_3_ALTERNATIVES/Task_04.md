@@ -177,13 +177,12 @@ LIMIT 20;
 | `EXISTS` + `UNNEST()` | Yes | 1303.750 ms | 2% | Complex filtering logic using array elements. |
 | Join original `patent_inventors` table | No | 1393.213 ms | 2% | Queries against the normalized relational table. |
 
-
-```
 ---
-```
+
 # Recommendation
 
 - Use `&&` when the inventors are stored as arrays.
 - Use `EXISTS` when more flexible matching logic is required.
 - Use `UNNEST()` for row-wise analysis or learning purposes.
 - Use the normalized `patent_inventors` table when the data is already stored in one row per inventor.
+```
