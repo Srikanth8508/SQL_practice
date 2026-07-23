@@ -218,15 +218,6 @@ The `WHERE` clause keeps only rows where the position is not `NULL`.
 
 ---
 
-## Sample Output
-
-| publication_number | inventors |
-|--------------------|----------------------------------------------|
-| US100001 | {Inventor_00012,Inventor_00467,Inventor_00891} |
-| US100003 | {Inventor_00467,Inventor_00987} |
-
----
-
 ## Advantages
 
 - Can determine the element position
@@ -243,13 +234,13 @@ The `WHERE` clause keeps only rows where the position is not `NULL`.
 
 # Comparison
 
-| Method | Best Use Case | GIN Index Support | Recommended |
-|---------|---------------|:-----------------:|:-----------:|
-| `@>` | Check whether an array contains one or more values | ✅ | ⭐⭐⭐⭐⭐ |
-| `ANY()` | Check whether a single value exists | ❌ | ⭐⭐⭐ |
-| `&&` | Check whether two arrays have any common elements | ✅ | ⭐⭐⭐⭐ |
-| `UNNEST()` | Convert arrays into rows for analysis or joins | ❌ | ⭐⭐ |
-| `ARRAY_POSITION()` | Find the position of an element in an array | ❌ | ⭐⭐⭐ |
+| Method | Best Use Case | GIN Index Support | 
+|---------|---------------|:-----------------:|
+| `@>` | Check whether an array contains one or more values | ✅ | 
+| `ANY()` | Check whether a single value exists | ❌ |
+| `&&` | Check whether two arrays have any common elements | ✅ | 
+| `UNNEST()` | Convert arrays into rows for analysis or joins | ❌ |
+| `ARRAY_POSITION()` | Find the position of an element in an array | ❌ |
 
 ---
 
