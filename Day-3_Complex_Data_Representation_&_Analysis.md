@@ -197,23 +197,6 @@ AND p1.publication_number < p2.publication_number
 LIMIT 20;
 ```
 
-OR
-
-```sql
-WITH sample AS
-(
-SELECT *
-FROM patents.patent_inventor_array
-LIMIT 1000
-)
-
-SELECT *
-FROM sample p1
-JOIN sample p2
-ON p1.inventors && p2.inventors
-AND p1.publication_number < p2.publication_number;
-```
-
 ### Screenshot
 
 <img width="397" height="567" alt="Screenshot 2026-07-21 at 4 09 08 PM" src="https://github.com/user-attachments/assets/c79bbf59-0dfd-4f8d-831c-94861f6f0a2c" />
