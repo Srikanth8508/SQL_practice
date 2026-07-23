@@ -187,4 +187,3 @@ LIMIT 20;
 - Use `EXISTS` when more flexible matching logic is required.
 - Use `UNNEST()` for row-wise analysis or learning purposes.
 - Use the normalized `patent_inventors` table when the data is already stored in one row per inventor.
-```
