@@ -361,6 +361,7 @@ FROM
 $$;
 
 ```
+<img width="957" height="406" alt="Screenshot 2026-07-24 at 5 14 09 PM" src="https://github.com/user-attachments/assets/af2189c9-fa73-4468-b0ba-80fb39cb20c0" />
 
 ---
 
@@ -371,6 +372,7 @@ SELECT *
 FROM get_patent_citation_hierarchy
 (  'US0001234567' );
 ```
+<img width="288" height="147" alt="Screenshot 2026-07-24 at 5 14 59 PM" src="https://github.com/user-attachments/assets/0ab95ab6-215b-4146-bed2-27c777e96ed5" />
 
 ---
 
@@ -381,24 +383,16 @@ FROM get_patent_citation_hierarchy
 `CROSS JOIN LATERAL` executes the function once for every patent.
 
 ```sql
-SELECT
+SELECT 
+  p.publication_number, 
+  c.cited_patent, 
+  c.depth 
+FROM 
+  patent_training p CROSS 
+  JOIN LATERAL get_patent_citation_hierarchy (p.publication_number) c 
+LIMIT 
+  100;
 
-    p.publication_number,
-
-    c.cited_patent,
-
-    c.depth
-
-FROM patent_training p
-
-CROSS JOIN LATERAL
-
-get_patent_citation_hierarchy
-(
-    p.publication_number
-) c
-
-LIMIT 100;
 ```
 
 ---
@@ -434,47 +428,34 @@ Disadvantages:
 ---
 
 ```sql
-CREATE VIEW patent_citation_summary AS
+CREATE VIEW patent_citation_summary AS 
+SELECT 
+  p.publication_number, 
+  p.inventor_name, 
+  p.publication_date, 
+  (
+    SELECT 
+      COUNT(*) 
+    FROM 
+      patent_citations pc 
+    WHERE 
+      pc.citing_publication_number = p.publication_number
+  ) AS direct_citation_count, 
+  (
+    SELECT 
+      COUNT(*) 
+    FROM 
+      get_patent_citation_hierarchy (p.publication_number)
+  ) AS total_citation_count, 
+  (
+    SELECT 
+      MAX(depth) 
+    FROM 
+      get_patent_citation_hierarchy (p.publication_number)
+  ) AS max_depth 
+FROM 
+  patent_training p;
 
-SELECT
-
-    p.publication_number,
-
-    p.inventor_name,
-
-    p.publication_date,
-
-    (
-        SELECT COUNT(*)
-
-        FROM patent_citations pc
-
-        WHERE pc.citing_publication_number =
-              p.publication_number
-
-    ) AS direct_citation_count,
-
-    (
-        SELECT COUNT(*)
-
-        FROM get_patent_citation_hierarchy
-        (
-            p.publication_number
-        )
-
-    ) AS total_citation_count,
-
-    (
-        SELECT MAX(depth)
-
-        FROM get_patent_citation_hierarchy
-        (
-            p.publication_number
-        )
-
-    ) AS max_depth
-
-FROM patent_training p;
 ```
 
 ---
@@ -498,13 +479,10 @@ Disadvantages
 ---
 
 ```sql
-CREATE MATERIALIZED VIEW patent_citation_summary_mv
-
-AS
-
-SELECT *
-
+CREATE MATERIALIZED VIEW patent_citation_summary_mv AS 
+SELECT * 
 FROM patent_citation_summary;
+
 ```
 
 ---
@@ -515,11 +493,8 @@ Required for concurrent refresh.
 
 ```sql
 CREATE UNIQUE INDEX idx_mv_patent
+ON patent_citation_summary_mv (publication_number);
 
-ON patent_citation_summary_mv
-(
-    publication_number
-);
 ```
 
 ---
@@ -529,22 +504,20 @@ ON patent_citation_summary_mv
 ## Direct Query
 
 ```sql
-EXPLAIN ANALYZE
+EXPLAIN ANALYZE 
+SELECT 
+  p.publication_number, 
+  (
+    SELECT 
+      COUNT(*) 
+    FROM 
+      patent_citations pc 
+    WHERE 
+      pc.citing_publication_number = p.publication_number
+  ) 
+FROM 
+  patent_training p;
 
-SELECT
-
-    p.publication_number,
-
-    (
-        SELECT COUNT(*)
-
-        FROM patent_citations pc
-
-        WHERE pc.citing_publication_number =
-              p.publication_number
-    )
-
-FROM patent_training p;
 ```
 
 ---
@@ -555,9 +528,7 @@ FROM patent_training p;
 EXPLAIN ANALYZE
 
 SELECT *
-
 FROM patent_citation_summary
-
 LIMIT 100;
 ```
 
@@ -569,9 +540,7 @@ LIMIT 100;
 EXPLAIN ANALYZE
 
 SELECT *
-
 FROM patent_citation_summary_mv
-
 LIMIT 100;
 ```
 
@@ -595,11 +564,9 @@ Insert a new citation.
 INSERT INTO patent_citations
 
 VALUES
+( 'US0009999999',
+  'US0000000005' );
 
-(
-    'US0009999999',
-    'US0000000005'
-);
 ```
 
 ---
@@ -608,11 +575,9 @@ VALUES
 
 ```sql
 SELECT *
-
 FROM patent_citation_summary
+WHERE publication_number = 'US0009999999';
 
-WHERE publication_number =
-'US0009999999';
 ```
 
 Result:
@@ -625,9 +590,7 @@ Result:
 
 ```sql
 SELECT *
-
 FROM patent_citation_summary_mv
-
 WHERE publication_number =
 'US0009999999';
 ```
