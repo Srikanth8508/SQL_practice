@@ -246,33 +246,31 @@ PostgreSQL solves this using a **Recursive CTE**.
 ## Recursive Query
 
 ```sql
-WITH 
-  RECURSIVE citation_tree AS (
-    SELECT 
-      citing_publication_number, 
-      cited_publication_number, 
-      1 AS depth 
-    FROM 
-      patent_citations 
-    WHERE 
-      citing_publication_number = 'US0001234567' 
-    UNION ALL 
-    SELECT 
-      ct.citing_publication_number, 
-      pc.cited_publication_number, 
-      ct.depth + 1 
-    FROM 
-      citation_tree ct 
-      JOIN patent_citations pc ON ct.cited_publication_number = pc.citing_publication_number
-  ) 
-SELECT 
-  * 
-FROM 
-  citation_tree;
+WITH RECURSIVE citation_tree AS
+(
+    SELECT
+        citing_publication_number,
+        cited_publication_number,
+        1 AS depth
+    FROM patent_citations
+    WHERE citing_publication_number = 'US0000054181'
+
+    UNION
+
+    SELECT
+        ct.citing_publication_number,
+        pc.cited_publication_number,
+        ct.depth + 1
+    FROM citation_tree ct
+    JOIN patent_citations pc
+      ON pc.citing_publication_number = ct.cited_publication_number
+)
+SELECT *
+FROM citation_tree;
 
 ```
 
-<img width="465" height="484" alt="Screenshot 2026-07-24 at 5 03 02 PM" src="https://github.com/user-attachments/assets/cb57eb19-6afe-41ff-89d9-a4297568ac8d" />
+<img width="579" height="492" alt="Screenshot 2026-07-24 at 6 28 25 PM" src="https://github.com/user-attachments/assets/298d5981-ebfb-4186-b2b6-c2e4e806e9bd" />
 
 
 ---
@@ -330,34 +328,39 @@ Benefits:
 ---
 
 ```sql
-CREATE 
-OR REPLACE FUNCTION get_patent_citation_hierarchy (patent_no TEXT) RETURNS TABLE (cited_patent TEXT, depth INT) LANGUAGE SQL AS $$ 
-WITH 
-  RECURSIVE hierarchy AS (
-    SELECT 
-      cited_publication_number, 
-      1 AS depth 
-    FROM 
-      patent_citations 
-    WHERE 
-      citing_publication_number = patent_no 
-    UNION ALL 
-    SELECT 
-      pc.cited_publication_number, 
-      h.depth + 1 
-    FROM 
-      hierarchy h 
-      JOIN patent_citations pc ON h.cited_publication_number = pc.citing_publication_number
-  ) 
-SELECT 
-  cited_publication_number, 
-  depth 
-FROM 
-  hierarchy;
+CREATE OR REPLACE FUNCTION get_patent_citation_hierarchy(patent_no TEXT)
+RETURNS TABLE
+(
+    cited_patent TEXT,
+    depth INT
+)
+LANGUAGE SQL
+AS $$
+WITH RECURSIVE hierarchy AS
+(
+    SELECT
+        cited_publication_number,
+        1 AS depth
+    FROM patent_citations
+    WHERE citing_publication_number = patent_no
+
+    UNION ALL
+
+    SELECT
+        pc.cited_publication_number,
+        h.depth + 1
+    FROM hierarchy h
+    JOIN patent_citations pc
+      ON h.cited_publication_number = pc.citing_publication_number
+)
+SELECT
+    cited_publication_number,
+    depth
+FROM hierarchy;
 $$;
 
 ```
-<img width="957" height="406" alt="Screenshot 2026-07-24 at 5 14 09 PM" src="https://github.com/user-attachments/assets/af2189c9-fa73-4468-b0ba-80fb39cb20c0" />
+<img width="723" height="595" alt="Screenshot 2026-07-24 at 6 32 39 PM" src="https://github.com/user-attachments/assets/d394a050-25b7-42cb-9ad5-a9cd70cb6eed" />
 
 ---
 
@@ -365,10 +368,9 @@ $$;
 
 ```sql
 SELECT *
-FROM get_patent_citation_hierarchy
-(  'US0001234567' );
+FROM get_patent_citation_hierarchy('US0001234567');
 ```
-<img width="288" height="147" alt="Screenshot 2026-07-24 at 5 14 59 PM" src="https://github.com/user-attachments/assets/0ab95ab6-215b-4146-bed2-27c777e96ed5" />
+<img width="454" height="123" alt="Screenshot 2026-07-24 at 6 36 13 PM" src="https://github.com/user-attachments/assets/52a75313-ee32-4274-a52b-5edfc1ea7a26" />
 
 ---
 
@@ -379,13 +381,13 @@ FROM get_patent_citation_hierarchy
 `CROSS JOIN LATERAL` executes the function once for every patent.
 
 ```sql
-SELECT 
-  p.publication_number, 
-  c.cited_patent, 
-  c.depth 
+SELECT
+    p.publication_number,
+    c.cited_patent,
+    c.depth
 FROM patent_training p
 CROSS JOIN LATERAL
-  get_patent_citation_hierarchy (p.publication_number) c 
+    get_patent_citation_hierarchy(p.publication_number) c
 LIMIT 100;
 
 ```
