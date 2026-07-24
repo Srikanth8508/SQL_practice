@@ -8,7 +8,7 @@ This task demonstrates how to model patent citation relationships and analyze ci
 
 # Existing Tables
 
-## patents_training
+## patent_training
 
 Contains the master patent information.
 
@@ -82,12 +82,14 @@ CREATE TABLE patent_citations
     ),
 
     FOREIGN KEY (citing_publication_number)
-        REFERENCES patents_training(publication_number),
+        REFERENCES patent_training(publication_number),
 
     FOREIGN KEY (cited_publication_number)
-        REFERENCES patents_training(publication_number)
+        REFERENCES patent_training(publication_number)
 );
 ```
+<img width="442" height="267" alt="Screenshot 2026-07-24 at 2 08 10 PM" src="https://github.com/user-attachments/assets/e0905b71-db3b-44ae-b11c-065042753122" />
+
 
 ---
 
@@ -106,6 +108,7 @@ ON patent_citations(citing_publication_number);
 CREATE INDEX idx_cited
 ON patent_citations(cited_publication_number);
 ```
+<img width="354" height="174" alt="Screenshot 2026-07-24 at 2 08 16 PM" src="https://github.com/user-attachments/assets/ba19504d-372c-436a-8309-31ebf67319bb" />
 
 ---
 
@@ -140,8 +143,9 @@ SELECT
                  publication_number
     ) AS rn
 
-FROM patents_training;
+FROM patent_training;
 ```
+<img width="322" height="204" alt="Screenshot 2026-07-24 at 4 06 44 PM" src="https://github.com/user-attachments/assets/f8d7d923-92c3-4230-becd-64d1e4ca6b93" />
 
 ---
 
@@ -415,7 +419,7 @@ SELECT
 
     c.depth
 
-FROM patents_training p
+FROM patent_training p
 
 CROSS JOIN LATERAL
 
@@ -500,7 +504,7 @@ SELECT
 
     ) AS max_depth
 
-FROM patents_training p;
+FROM patent_training p;
 ```
 
 ---
@@ -570,7 +574,7 @@ SELECT
               p.publication_number
     )
 
-FROM patents_training p;
+FROM patent_training p;
 ```
 
 ---
