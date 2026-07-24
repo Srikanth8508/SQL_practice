@@ -163,29 +163,26 @@ ON ordered_patents(rn);
 
 ```sql
 INSERT INTO patent_citations
-
-SELECT DISTINCT
-
+(
+    citing_publication_number,
+    cited_publication_number
+)
+SELECT
     p.publication_number,
-    older.publication_number
-
+    c.publication_number
 FROM ordered_patents p
-
 CROSS JOIN LATERAL
 (
-    SELECT publication_number
+    SELECT DISTINCT
+           floor(random() * (p.rn - 1) + 1)::bigint AS random_rn
+    FROM generate_series(1,15)
+    WHERE p.rn > 1
+    LIMIT (floor(random() * 5) + 1)::int
+) r
+JOIN ordered_patents c
+ON c.rn = r.random_rn
+WHERE p.rn > 1;
 
-    FROM ordered_patents
-
-    WHERE rn < p.rn
-
-    ORDER BY random()
-
-    LIMIT floor(random()*5 + 1)
-
-) older
-
-WHERE p.rn > 5;
 ```
 
 <img width="478" height="329" alt="Screenshot 2026-07-24 at 4 59 48 PM" src="https://github.com/user-attachments/assets/efcb76e9-81ff-481a-84cc-994dfcf61e39" />
