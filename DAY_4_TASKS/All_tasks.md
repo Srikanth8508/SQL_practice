@@ -70,23 +70,16 @@ This table represents a **many-to-many relationship** between patents.
 * Foreign Keys guarantee referential integrity.
 
 ```sql
-CREATE TABLE patent_citations
-(
-    citing_publication_number TEXT NOT NULL,
-    cited_publication_number  TEXT NOT NULL,
-
-    PRIMARY KEY
-    (
-        citing_publication_number,
-        cited_publication_number
-    ),
-
-    FOREIGN KEY (citing_publication_number)
-        REFERENCES patent_training(publication_number),
-
-    FOREIGN KEY (cited_publication_number)
-        REFERENCES patent_training(publication_number)
+CREATE TABLE patent_citations (
+  citing_publication_number TEXT NOT NULL, 
+  cited_publication_number TEXT NOT NULL, 
+  PRIMARY KEY (
+    citing_publication_number, cited_publication_number
+  ), 
+  FOREIGN KEY (citing_publication_number) REFERENCES patent_training(publication_number), 
+  FOREIGN KEY (cited_publication_number) REFERENCES patent_training(publication_number)
 );
+
 ```
 <img width="442" height="267" alt="Screenshot 2026-07-24 at 2 08 10 PM" src="https://github.com/user-attachments/assets/e0905b71-db3b-44ae-b11c-065042753122" />
 
@@ -131,19 +124,17 @@ This guarantees that every citation points to an older patent.
 ## Create Ordered Patent List
 
 ```sql
-CREATE TEMP TABLE ordered_patents AS
-
-SELECT
-    publication_number,
-    publication_date,
-
-    ROW_NUMBER() OVER
-    (
-        ORDER BY publication_date,
-                 publication_number
-    ) AS rn
-
+CREATE TEMP TABLE ordered_patents AS 
+SELECT 
+  publication_number, 
+  publication_date, 
+  ROW_NUMBER() OVER (
+    ORDER BY 
+      publication_date, 
+      publication_number
+  ) AS rn 
 FROM patent_training;
+
 ```
 <img width="322" height="204" alt="Screenshot 2026-07-24 at 4 06 44 PM" src="https://github.com/user-attachments/assets/f8d7d923-92c3-4230-becd-64d1e4ca6b93" />
 
@@ -162,26 +153,33 @@ ON ordered_patents(rn);
 ## Generate Citation Relationships
 
 ```sql
-INSERT INTO patent_citations
-(
-    citing_publication_number,
-    cited_publication_number
-)
-SELECT
-    p.publication_number,
-    c.publication_number
-FROM ordered_patents p
-CROSS JOIN LATERAL
-(
-    SELECT DISTINCT
-           floor(random() * (p.rn - 1) + 1)::bigint AS random_rn
-    FROM generate_series(1,15)
-    WHERE p.rn > 1
-    LIMIT (floor(random() * 5) + 1)::int
-) r
-JOIN ordered_patents c
-ON c.rn = r.random_rn
-WHERE p.rn > 1;
+INSERT INTO patent_citations (
+  citing_publication_number, cited_publication_number
+) 
+SELECT 
+  p.publication_number, 
+  c.publication_number 
+FROM 
+  ordered_patents p CROSS 
+  JOIN LATERAL (
+    SELECT 
+      DISTINCT floor(
+        random() * (p.rn - 1) + 1
+      ):: bigint AS random_rn 
+    FROM 
+      generate_series(1, 15) 
+    WHERE 
+      p.rn > 1 
+    LIMIT 
+      (
+        floor(
+          random() * 5
+        ) + 1
+      ):: int
+  ) r 
+  JOIN ordered_patents c ON c.rn = r.random_rn 
+WHERE 
+  p.rn > 1;
 
 ```
 
@@ -206,20 +204,9 @@ Without `LATERAL`, the same random patents would be selected for every row.
 # Step 3 - Verify Citation Data
 
 ```sql
-SELECT *
-
-FROM patent_citations
-
-LIMIT 20;
+SELECT * FROM patent_citations LIMIT 20;
 ```
-
-Expected output:
-
-| Citing Patent | Cited Patent |
-| ------------- | ------------ |
-| US0000001001  | US0000000005 |
-| US0000001001  | US0000000032 |
-| US0000001002  | US0000000044 |
+<img width="400" height="384" alt="Screenshot 2026-07-24 at 5 04 19 PM" src="https://github.com/user-attachments/assets/36ffa8ec-ffe1-482a-b64b-3992c0382750" />
 
 ---
 
@@ -263,36 +250,34 @@ PostgreSQL solves this using a **Recursive CTE**.
 ## Recursive Query
 
 ```sql
-WITH RECURSIVE citation_tree AS
-(
-    SELECT
-        citing_publication_number,
-        cited_publication_number,
-        1 AS depth
+WITH 
+  RECURSIVE citation_tree AS (
+    SELECT 
+      citing_publication_number, 
+      cited_publication_number, 
+      1 AS depth 
+    FROM 
+      patent_citations 
+    WHERE 
+      citing_publication_number = 'US0001234567' 
+    UNION ALL 
+    SELECT 
+      ct.citing_publication_number, 
+      pc.cited_publication_number, 
+      ct.depth + 1 
+    FROM 
+      citation_tree ct 
+      JOIN patent_citations pc ON ct.cited_publication_number = pc.citing_publication_number
+  ) 
+SELECT 
+  * 
+FROM 
+  citation_tree;
 
-    FROM patent_citations
-
-    WHERE citing_publication_number = 'US0001234567'
-
-    UNION ALL
-
-    SELECT
-        ct.citing_publication_number,
-        pc.cited_publication_number,
-        ct.depth + 1
-
-    FROM citation_tree ct
-
-    JOIN patent_citations pc
-
-      ON ct.cited_publication_number =
-         pc.citing_publication_number
-)
-
-SELECT *
-
-FROM citation_tree;
 ```
+
+<img width="465" height="484" alt="Screenshot 2026-07-24 at 5 03 02 PM" src="https://github.com/user-attachments/assets/cb57eb19-6afe-41ff-89d9-a4297568ac8d" />
+
 
 ---
 
@@ -349,54 +334,32 @@ Benefits:
 ---
 
 ```sql
-CREATE OR REPLACE FUNCTION
-get_patent_citation_hierarchy
-(
-    patent_no TEXT
-)
-
-RETURNS TABLE
-(
-    cited_patent TEXT,
-    depth INT
-)
-
-LANGUAGE SQL
-
-AS
-$$
-
-WITH RECURSIVE hierarchy AS
-(
-    SELECT
-        cited_publication_number,
-        1 AS depth
-
-    FROM patent_citations
-
-    WHERE citing_publication_number = patent_no
-
-    UNION ALL
-
-    SELECT
-        pc.cited_publication_number,
-        h.depth + 1
-
-    FROM hierarchy h
-
-    JOIN patent_citations pc
-
-      ON h.cited_publication_number =
-         pc.citing_publication_number
-)
-
-SELECT
-    cited_publication_number,
-    depth
-
-FROM hierarchy;
-
+CREATE 
+OR REPLACE FUNCTION get_patent_citation_hierarchy (patent_no TEXT) RETURNS TABLE (cited_patent TEXT, depth INT) LANGUAGE SQL AS $$ 
+WITH 
+  RECURSIVE hierarchy AS (
+    SELECT 
+      cited_publication_number, 
+      1 AS depth 
+    FROM 
+      patent_citations 
+    WHERE 
+      citing_publication_number = patent_no 
+    UNION ALL 
+    SELECT 
+      pc.cited_publication_number, 
+      h.depth + 1 
+    FROM 
+      hierarchy h 
+      JOIN patent_citations pc ON h.cited_publication_number = pc.citing_publication_number
+  ) 
+SELECT 
+  cited_publication_number, 
+  depth 
+FROM 
+  hierarchy;
 $$;
+
 ```
 
 ---
@@ -405,11 +368,8 @@ $$;
 
 ```sql
 SELECT *
-
 FROM get_patent_citation_hierarchy
-(
-    'US0001234567'
-);
+(  'US0001234567' );
 ```
 
 ---
