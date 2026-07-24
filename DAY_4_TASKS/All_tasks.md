@@ -387,11 +387,10 @@ SELECT
   p.publication_number, 
   c.cited_patent, 
   c.depth 
-FROM 
-  patent_training p CROSS 
-  JOIN LATERAL get_patent_citation_hierarchy (p.publication_number) c 
-LIMIT 
-  100;
+FROM patent_training p
+CROSS JOIN LATERAL
+  get_patent_citation_hierarchy (p.publication_number) c 
+LIMIT 100;
 
 ```
 
@@ -510,13 +509,11 @@ SELECT
   (
     SELECT 
       COUNT(*) 
-    FROM 
-      patent_citations pc 
+    FROM patent_citations pc 
     WHERE 
       pc.citing_publication_number = p.publication_number
   ) 
-FROM 
-  patent_training p;
+FROM patent_training p;
 
 ```
 
@@ -562,9 +559,7 @@ Insert a new citation.
 
 ```sql
 INSERT INTO patent_citations
-
-VALUES
-( 'US0009999999',
+VALUES ( 'US0009999999',
   'US0000000005' );
 
 ```
@@ -645,15 +640,3 @@ A concurrent refresh:
 | REFRESH MATERIALIZED VIEW CONCURRENTLY | Refresh without blocking read operations         |
 
 ---
-
-# Expected Outcome
-
-After completing this task, you will have:
-
-* A normalized patent citation model.
-* Realistic citation data for 1 million patents.
-* Recursive traversal of citation hierarchies.
-* A reusable SQL function for hierarchy retrieval.
-* Summary reporting through both a View and Materialized View.
-* Performance benchmarks comparing direct queries, views, and materialized views.
-* A clear understanding of refresh behavior and maintenance for materialized views.
