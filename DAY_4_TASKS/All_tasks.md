@@ -147,6 +147,16 @@ FROM patent_training;
 ```
 <img width="322" height="204" alt="Screenshot 2026-07-24 at 4 06 44 PM" src="https://github.com/user-attachments/assets/f8d7d923-92c3-4230-becd-64d1e4ca6b93" />
 
+# Create Index 
+
+``` sql
+
+CREATE INDEX idx_ordered_patents_rn
+ON ordered_patents(rn);
+
+```
+<img width="295" height="101" alt="Screenshot 2026-07-24 at 4 26 31 PM" src="https://github.com/user-attachments/assets/759aa425-0ee0-4d95-a727-077836e32540" />
+
 ---
 
 ## Generate Citation Relationships
@@ -177,6 +187,9 @@ CROSS JOIN LATERAL
 
 WHERE p.rn > 5;
 ```
+
+<img width="478" height="329" alt="Screenshot 2026-07-24 at 4 59 48 PM" src="https://github.com/user-attachments/assets/efcb76e9-81ff-481a-84cc-994dfcf61e39" />
+
 
 ---
 
