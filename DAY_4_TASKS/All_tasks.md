@@ -153,33 +153,26 @@ ON ordered_patents(rn);
 ## Generate Citation Relationships
 
 ```sql
-INSERT INTO patent_citations (
-  citing_publication_number, cited_publication_number
+INSERT INTO patent_citations
+(
+  citing_publication_number,
+  cited_publication_number
 ) 
 SELECT 
   p.publication_number, 
   c.publication_number 
 FROM 
-  ordered_patents p CROSS 
-  JOIN LATERAL (
-    SELECT 
-      DISTINCT floor(
-        random() * (p.rn - 1) + 1
-      ):: bigint AS random_rn 
-    FROM 
-      generate_series(1, 15) 
-    WHERE 
-      p.rn > 1 
-    LIMIT 
-      (
-        floor(
-          random() * 5
-        ) + 1
-      ):: int
-  ) r 
-  JOIN ordered_patents c ON c.rn = r.random_rn 
-WHERE 
-  p.rn > 1;
+  ordered_patents p
+CROSS JOIN LATERAL
+(
+    SELECT DISTINCT
+           floor(random() * (p.rn - 1) + 1):: bigint AS random_rn 
+    FROM generate_series(1, 15) 
+    WHERE p.rn > 1 
+    LIMIT (floor(random() * 5) + 1):: int
+) r 
+JOIN ordered_patents c ON c.rn = r.random_rn 
+WHERE p.rn > 1;
 
 ```
 
