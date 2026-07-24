@@ -201,7 +201,8 @@ Without `LATERAL`, the same random patents would be selected for every row.
 ```sql
 SELECT * FROM patent_citations LIMIT 20;
 ```
-<img width="400" height="384" alt="Screenshot 2026-07-24 at 5 04 19 PM" src="https://github.com/user-attachments/assets/36ffa8ec-ffe1-482a-b64b-3992c0382750" />
+<img width="452" height="452" alt="Screenshot 2026-07-24 at 6 23 42 PM" src="https://github.com/user-attachments/assets/f2b61f0e-1954-4e4d-9542-a150806c7d64" />
+
 
 ---
 
