@@ -318,7 +318,7 @@ $$;
 
 ```sql
 SELECT *
-FROM get_patent_citation_hierarchy('US0001234567');
+FROM get_patent_citation_hierarchy('US0000054181');
 ```
 <img width="439" height="122" alt="Screenshot 2026-07-27 at 12 11 44 PM" src="https://github.com/user-attachments/assets/85cc64e4-95bd-4593-9b08-da2fb3b1abb4" />
 
