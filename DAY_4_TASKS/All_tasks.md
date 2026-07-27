@@ -426,7 +426,7 @@ FROM
 ) p;
 
 ```
-
+<img width="831" height="757" alt="Screenshot 2026-07-27 at 8 27 58 PM" src="https://github.com/user-attachments/assets/8f6d802d-cf48-43b3-b356-998b2ac29bac" />
 
 ---
 
@@ -453,6 +453,7 @@ CREATE MATERIALIZED VIEW patent_citation_summary_1M_mv AS
 SELECT * FROM patent_citation_summary_1M ;
 
 ```
+<img width="871" height="412" alt="Screenshot 2026-07-27 at 8 32 02 PM" src="https://github.com/user-attachments/assets/2965d2e9-3150-4076-9c6b-7b6c21d1ae7a" />
 
 
 ---
@@ -496,7 +497,6 @@ FROM patent_training p
 LIMIT 100;
 
 ```
-<img width="1318" height="581" alt="Screenshot 2026-07-27 at 6 24 10 PM" src="https://github.com/user-attachments/assets/d664ffa7-db37-401c-a091-6f46d75d9e06" />
 
 ---
 
@@ -505,10 +505,9 @@ LIMIT 100;
 ```sql
 EXPLAIN ANALYZE
 SELECT *
-FROM patent_citation_summary_demo
+FROM patent_citation_summary_1M
 LIMIT 100;
 ```
-<img width="1235" height="403" alt="Screenshot 2026-07-27 at 6 24 12 PM" src="https://github.com/user-attachments/assets/444d3307-db91-41e8-bd78-82d06a161e8d" />
 
 ---
 
@@ -517,10 +516,9 @@ LIMIT 100;
 ```sql
 EXPLAIN ANALYZE
 SELECT *
-FROM patent_citation_summary_mv
+FROM patent_citation_summary_1M_mv
 LIMIT 100;
 ```
-<img width="918" height="220" alt="Screenshot 2026-07-27 at 6 24 25 PM" src="https://github.com/user-attachments/assets/2dcfe038-6cdc-453b-aa91-edf4a080465d" />
 
 ---
 
