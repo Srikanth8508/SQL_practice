@@ -6,56 +6,6 @@ This task demonstrates how to model patent citation relationships and analyze ci
 
 ---
 
-# Existing Tables
-
-## patent_training
-
-Contains the master patent information.
-
-| Column             | Description                      |
-| ------------------ | -------------------------------- |
-| publication_number | Unique patent publication number |
-| inventor_name      | Primary inventor                 |
-| publication_date   | Patent publication date          |
-| title              | Patent title                     |
-| abstract           | Patent abstract                  |
-
----
-
-## patent_inventors
-
-Stores one row per inventor for each patent.
-
-| Column             | Description       |
-| ------------------ | ----------------- |
-| publication_number | Patent number     |
-| inventor_name      | Inventor          |
-| inventor_order     | Order of inventor |
-
----
-
-## patent_inventor_array
-
-Stores inventors as an array.
-
-| Column             | Description        |
-| ------------------ | ------------------ |
-| publication_number | Patent number      |
-| inventors          | Array of inventors |
-
----
-
-## patent_metadata
-
-Stores additional metadata using JSONB.
-
-| Column             | Description     |
-| ------------------ | --------------- |
-| publication_number | Patent number   |
-| metadata           | Patent metadata |
-
----
-
 # Step 1 - Create Patent Citation Table
 
 Each patent can cite multiple older patents.
