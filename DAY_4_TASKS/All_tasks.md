@@ -196,32 +196,38 @@ PostgreSQL solves this using a **Recursive CTE**.
 ## Recursive Query
 
 ```sql
-WITH RECURSIVE citation_tree AS
+WITH RECURSIVE hierarchy AS
 (
+    -- Root level
     SELECT
         citing_publication_number,
         cited_publication_number,
-        1 AS depth
+        1 AS depth,
+        citing_publication_number || ' -> ' || cited_publication_number AS path
     FROM patent_citations
-    WHERE citing_publication_number = 'US0000054181'
+    WHERE citing_publication_number = 'US0000058066'
 
-    UNION
+    UNION ALL
 
+    -- Recursive levels
     SELECT
-        ct.citing_publication_number,
+        h.citing_publication_number,
         pc.cited_publication_number,
-        ct.depth + 1
-    FROM citation_tree ct
+        h.depth + 1,
+        h.path || ' -> ' || pc.cited_publication_number
+    FROM hierarchy h
     JOIN patent_citations pc
-      ON pc.citing_publication_number = ct.cited_publication_number
-    WHERE ct.depth < 10
+      ON pc.citing_publication_number = h.cited_publication_number
+    WHERE h.depth < 5
 )
-SELECT *
-FROM citation_tree;
-
+SELECT
+    path,
+    depth
+FROM hierarchy
+ORDER BY depth, path;
 ```
 
-![Uploading Screenshot 2026-07-27 at 12.09.42 PM.png…]()
+<img width="903" height="1042" alt="Screenshot 2026-07-27 at 1 15 16 PM" src="https://github.com/user-attachments/assets/50fcf532-1701-45ac-861d-9c92d9e76453" />
 
 ---
 
@@ -293,7 +299,7 @@ WITH RECURSIVE hierarchy AS
         cited_publication_number,
         1 AS depth
     FROM patent_citations
-    WHERE citing_publication_number = patent_no
+    WHERE citing_publication_number = 'US0000058066'
 
     UNION
 
