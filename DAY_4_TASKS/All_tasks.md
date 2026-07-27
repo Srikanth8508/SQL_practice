@@ -296,33 +296,34 @@ Benefits:
 CREATE OR REPLACE FUNCTION get_patent_citation_hierarchy(patent_no TEXT)
 RETURNS TABLE
 (
+    citing_patent TEXT,
     cited_patent TEXT,
     depth INT
 )
 LANGUAGE SQL
 AS
 $$
-WITH RECURSIVE hierarchy AS
+WITH RECURSIVE hierarchy(citing_patent, cited_patent, depth) AS
 (
     SELECT
-        cited_publication_number,
-        1 AS depth
-    FROM patent_citations
-    WHERE citing_publication_number = 'US0000058066'
+        pc.citing_publication_number,
+        pc.cited_publication_number,
+        1
+    FROM patent_citations pc
+    WHERE pc.citing_publication_number = patent_no
 
-    UNION
+    UNION ALL
 
     SELECT
+        pc.citing_publication_number,
         pc.cited_publication_number,
         h.depth + 1
     FROM hierarchy h
     JOIN patent_citations pc
-      ON pc.citing_publication_number = h.cited_publication_number
-    WHERE h.depth < 10
+      ON pc.citing_publication_number = h.cited_patent
+    WHERE h.depth < 4
 )
-SELECT
-    cited_publication_number,
-    depth
+SELECT *
 FROM hierarchy;
 $$;
 ```
@@ -332,10 +333,9 @@ $$;
 ## Execute Function
 
 ```sql
-SELECT *
-FROM get_patent_citation_hierarchy('US0000054181');
+SELECT * FROM get_patent_citation_hierarchy('US0000058066');
 ```
-<img width="439" height="122" alt="Screenshot 2026-07-27 at 12 11 44 PM" src="https://github.com/user-attachments/assets/85cc64e4-95bd-4593-9b08-da2fb3b1abb4" />
+<img width="498" height="513" alt="Screenshot 2026-07-27 at 2 05 18 PM" src="https://github.com/user-attachments/assets/3cc8fa32-8047-45bc-8989-1516bb630991" />
 
 ---
 
