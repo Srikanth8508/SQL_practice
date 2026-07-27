@@ -399,35 +399,35 @@ Disadvantages:
 ---
 
 ```sql
-CREATE VIEW patent_citation_summary AS 
-SELECT 
-  p.publication_number, 
-  p.inventor_name, 
-  p.publication_date, 
-  (
-    SELECT 
-      COUNT(*) 
-    FROM 
-      patent_citations pc 
-    WHERE 
-      pc.citing_publication_number = p.publication_number
-  ) AS direct_citation_count, 
-  (
-    SELECT 
-      COUNT(*) 
-    FROM 
-      get_patent_citation_hierarchy (p.publication_number)
-  ) AS total_citation_count, 
-  (
-    SELECT 
-      MAX(depth) 
-    FROM 
-      get_patent_citation_hierarchy (p.publication_number)
-  ) AS max_depth 
-FROM 
-  patent_training p;
+
+CREATE VIEW patent_citation_summary_demo AS
+SELECT
+    p.publication_number,
+    p.inventor_name,
+    p.publication_date,
+    (
+        SELECT COUNT(*)
+        FROM patent_citations pc
+        WHERE pc.citing_publication_number = p.publication_number
+    ) AS direct_citation_count,
+    (
+        SELECT COUNT(*)
+        FROM get_patent_citation_hierarchy(p.publication_number)
+    ) AS total_citation_count,
+    (
+        SELECT MAX(depth)
+        FROM get_patent_citation_hierarchy(p.publication_number)
+    ) AS max_depth
+FROM
+(
+    SELECT *
+    FROM patent_training
+    ORDER BY publication_number
+    LIMIT 5000
+) p;
 
 ```
+<img width="529" height="417" alt="Screenshot 2026-07-27 at 4 33 47 PM" src="https://github.com/user-attachments/assets/38bd0f44-ea5d-4ea0-986f-7c1bd5d46d49" />
 
 ---
 
@@ -450,11 +450,14 @@ Disadvantages
 ---
 
 ```sql
-CREATE MATERIALIZED VIEW patent_citation_summary_mv AS 
-SELECT * 
-FROM patent_citation_summary;
+
+CREATE MATERIALIZED VIEW patent_citation_summary_mv AS
+SELECT *
+FROM patent_citations 
+LIMIT 5000;
 
 ```
+<img width="392" height="141" alt="Screenshot 2026-07-27 at 4 33 48 PM" src="https://github.com/user-attachments/assets/ac96cdff-78a3-4c0a-a930-95f41629edee" />
 
 ---
 
@@ -464,7 +467,7 @@ Required for concurrent refresh.
 
 ```sql
 CREATE UNIQUE INDEX idx_mv_patent
-ON patent_citation_summary_mv (publication_number);
+ON patent_citation_summary_mv (citing_publication_number);
 
 ```
 
