@@ -428,6 +428,7 @@ FROM
 
 ```
 <img width="529" height="417" alt="Screenshot 2026-07-27 at 4 33 47 PM" src="https://github.com/user-attachments/assets/38bd0f44-ea5d-4ea0-986f-7c1bd5d46d49" />
+<img width="817" height="161" alt="Screenshot 2026-07-27 at 4 45 31 PM" src="https://github.com/user-attachments/assets/8f970e2f-a303-4926-a2ab-c6404ea99056" />
 
 ---
 
@@ -459,6 +460,8 @@ LIMIT 5000;
 ```
 <img width="392" height="141" alt="Screenshot 2026-07-27 at 4 33 48 PM" src="https://github.com/user-attachments/assets/ac96cdff-78a3-4c0a-a930-95f41629edee" />
 
+<img width="416" height="176" alt="Screenshot 2026-07-27 at 4 45 35 PM" src="https://github.com/user-attachments/assets/4d2c8178-fa00-416e-b696-4774fcf0d9f8" />
+
 ---
 
 ## Create Unique Index
@@ -478,17 +481,26 @@ ON patent_citation_summary_mv (citing_publication_number);
 ## Direct Query
 
 ```sql
-EXPLAIN ANALYZE 
-SELECT 
-  p.publication_number, 
-  (
-    SELECT 
-      COUNT(*) 
-    FROM patent_citations pc 
-    WHERE 
-      pc.citing_publication_number = p.publication_number
-  ) 
-FROM patent_training p;
+EXPLAIN ANALYZE
+SELECT
+    p.publication_number,
+    p.inventor_name,
+    p.publication_date,
+    (
+        SELECT COUNT(*)
+        FROM patent_citations pc
+        WHERE pc.citing_publication_number = p.publication_number
+    ) AS direct_citation_count,
+    (
+        SELECT COUNT(*)
+        FROM get_patent_citation_hierarchy(p.publication_number)
+    ) AS total_citation_count,
+    (
+        SELECT MAX(depth)
+        FROM get_patent_citation_hierarchy(p.publication_number)
+    ) AS max_depth
+FROM patent_training p
+LIMIT 100;
 
 ```
 
@@ -498,9 +510,8 @@ FROM patent_training p;
 
 ```sql
 EXPLAIN ANALYZE
-
 SELECT *
-FROM patent_citation_summary
+FROM patent_citation_summary_demo
 LIMIT 100;
 ```
 
@@ -510,7 +521,6 @@ LIMIT 100;
 
 ```sql
 EXPLAIN ANALYZE
-
 SELECT *
 FROM patent_citation_summary_mv
 LIMIT 100;
@@ -534,8 +544,15 @@ Insert a new citation.
 
 ```sql
 INSERT INTO patent_citations
-VALUES ( 'US0009999999',
-  'US0000000005' );
+(
+    citing_publication_number,
+    cited_publication_number
+)
+VALUES
+(
+    'US0000000001',
+    'US9999999999'
+);
 
 ```
 
@@ -545,8 +562,8 @@ VALUES ( 'US0009999999',
 
 ```sql
 SELECT *
-FROM patent_citation_summary
-WHERE publication_number = 'US0009999999';
+FROM patent_citation_summary_demo
+WHERE publication_number = 'US0000000001';
 
 ```
 
@@ -561,8 +578,7 @@ Result:
 ```sql
 SELECT *
 FROM patent_citation_summary_mv
-WHERE publication_number =
-'US0009999999';
+WHERE publication_number = 'US0000000001';
 ```
 
 Result:
@@ -582,8 +598,7 @@ REFRESH MATERIALIZED VIEW patent_citation_summary_mv;
 ## Concurrent Refresh
 
 ```sql
-REFRESH MATERIALIZED VIEW CONCURRENTLY
-patent_citation_summary_mv;
+REFRESH MATERIALIZED VIEW CONCURRENTLY patent_citation_summary_mv;
 ```
 
 ### Technical Explanation
