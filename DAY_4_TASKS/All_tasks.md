@@ -336,7 +336,7 @@ $$;
 ```sql
 SELECT * FROM get_patent_citation_hierarchy('US0000058066');
 ```
-<img width="498" height="513" alt="Screenshot 2026-07-27 at 2 05 18 PM" src="https://github.com/user-attachments/assets/3cc8fa32-8047-45bc-8989-1516bb630991" />
+<img width="733" height="898" alt="Screenshot 2026-07-27 at 6 15 16 PM" src="https://github.com/user-attachments/assets/43f0a3af-b2d7-45da-9662-971ae89f88ff" />
 
 ---
 
@@ -412,11 +412,11 @@ SELECT
     ) AS direct_citation_count,
     (
         SELECT COUNT(*)
-        FROM get_patent_citation_hierarchy(p.publication_number)
+        FROM get_patent_citation_paths(p.publication_number)
     ) AS total_citation_count,
     (
         SELECT MAX(depth)
-        FROM get_patent_citation_hierarchy(p.publication_number)
+        FROM get_patent_citation_paths(p.publication_number)
     ) AS max_depth
 FROM
 (
@@ -427,8 +427,8 @@ FROM
 ) p;
 
 ```
-<img width="529" height="417" alt="Screenshot 2026-07-27 at 4 33 47 PM" src="https://github.com/user-attachments/assets/38bd0f44-ea5d-4ea0-986f-7c1bd5d46d49" />
-<img width="817" height="161" alt="Screenshot 2026-07-27 at 4 45 31 PM" src="https://github.com/user-attachments/assets/8f970e2f-a303-4926-a2ab-c6404ea99056" />
+<img width="814" height="554" alt="Screenshot 2026-07-27 at 6 21 22 PM" src="https://github.com/user-attachments/assets/41ced742-e5d2-4aee-bf16-d6725d3b99fe" />
+
 
 ---
 
@@ -458,9 +458,8 @@ FROM patent_citations
 LIMIT 5000;
 
 ```
-<img width="392" height="141" alt="Screenshot 2026-07-27 at 4 33 48 PM" src="https://github.com/user-attachments/assets/ac96cdff-78a3-4c0a-a930-95f41629edee" />
+<img width="424" height="271" alt="Screenshot 2026-07-27 at 6 22 39 PM" src="https://github.com/user-attachments/assets/765510c1-dbb9-43e0-91d9-f8f1fecafd20" />
 
-<img width="416" height="176" alt="Screenshot 2026-07-27 at 4 45 35 PM" src="https://github.com/user-attachments/assets/4d2c8178-fa00-416e-b696-4774fcf0d9f8" />
 
 ---
 
@@ -503,6 +502,7 @@ FROM patent_training p
 LIMIT 100;
 
 ```
+<img width="1318" height="581" alt="Screenshot 2026-07-27 at 6 24 10 PM" src="https://github.com/user-attachments/assets/d664ffa7-db37-401c-a091-6f46d75d9e06" />
 
 ---
 
@@ -514,6 +514,7 @@ SELECT *
 FROM patent_citation_summary_demo
 LIMIT 100;
 ```
+<img width="1235" height="403" alt="Screenshot 2026-07-27 at 6 24 12 PM" src="https://github.com/user-attachments/assets/444d3307-db91-41e8-bd78-82d06a161e8d" />
 
 ---
 
@@ -525,6 +526,7 @@ SELECT *
 FROM patent_citation_summary_mv
 LIMIT 100;
 ```
+<img width="918" height="220" alt="Screenshot 2026-07-27 at 6 24 25 PM" src="https://github.com/user-attachments/assets/2dcfe038-6cdc-453b-aa91-edf4a080465d" />
 
 ---
 
