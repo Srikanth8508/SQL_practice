@@ -293,37 +293,38 @@ Benefits:
 ---
 
 ```sql
-CREATE OR REPLACE FUNCTION get_patent_citation_hierarchy(patent_no TEXT)
+CREATE OR REPLACE FUNCTION get_patent_citation_paths(patent_no TEXT)
 RETURNS TABLE
 (
-    citing_patent TEXT,
-    cited_patent TEXT,
+    path TEXT,
     depth INT
 )
 LANGUAGE SQL
 AS
 $$
-WITH RECURSIVE hierarchy(citing_patent, cited_patent, depth) AS
+WITH RECURSIVE hierarchy AS
 (
     SELECT
-        pc.citing_publication_number,
-        pc.cited_publication_number,
-        1
-    FROM patent_citations pc
-    WHERE pc.citing_publication_number = patent_no
+        cited_publication_number,
+        1 AS depth,
+        patent_no || ' -> ' || cited_publication_number AS path
+    FROM patent_citations
+    WHERE citing_publication_number = patent_no
 
     UNION ALL
 
     SELECT
-        pc.citing_publication_number,
         pc.cited_publication_number,
-        h.depth + 1
+        h.depth + 1,
+        h.path || ' -> ' || pc.cited_publication_number
     FROM hierarchy h
     JOIN patent_citations pc
-      ON pc.citing_publication_number = h.cited_patent
-    WHERE h.depth < 4
+      ON pc.citing_publication_number = h.cited_publication_number
+    WHERE h.depth < 5
 )
-SELECT *
+SELECT
+    path,
+    depth
 FROM hierarchy;
 $$;
 ```
@@ -348,23 +349,22 @@ SELECT * FROM get_patent_citation_hierarchy('US0000058066');
 ```sql
 SELECT
     p.publication_number,
-    c.cited_patent,
-    c.depth
+    c.depth,
+    c.path
 FROM
 (
     SELECT publication_number
     FROM patent_training
+    ORDER BY publication_number
     LIMIT 3
 ) p
 CROSS JOIN LATERAL
-(
-    SELECT *
-    FROM get_patent_citation_hierarchy(p.publication_number)
-    LIMIT 10
-) c;
+    get_patent_citation_paths(p.publication_number) c
+ORDER BY p.publication_number, c.depth
+LIMIT 150 ;
 
 ```
-<img width="510" height="875" alt="Screenshot 2026-07-27 at 12 30 19 PM" src="https://github.com/user-attachments/assets/7511a19a-794c-4163-aeac-b0b1d3515fc8" />
+<img width="698" height="854" alt="Screenshot 2026-07-27 at 2 26 33 PM" src="https://github.com/user-attachments/assets/c98144c5-e9ee-43b1-b68a-30bf9164f1b6" />
 
 ---
 
