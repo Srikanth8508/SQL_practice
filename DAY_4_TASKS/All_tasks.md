@@ -400,7 +400,7 @@ Disadvantages:
 
 ```sql
 
-CREATE VIEW patent_citation_summary_demo AS
+CREATE VIEW patent_citation_summary_1M AS
 SELECT
     p.publication_number,
     p.inventor_name,
@@ -423,11 +423,9 @@ FROM
     SELECT *
     FROM patent_training
     ORDER BY publication_number
-    LIMIT 5000
 ) p;
 
 ```
-<img width="814" height="554" alt="Screenshot 2026-07-27 at 6 21 22 PM" src="https://github.com/user-attachments/assets/41ced742-e5d2-4aee-bf16-d6725d3b99fe" />
 
 
 ---
@@ -451,14 +449,10 @@ Disadvantages
 ---
 
 ```sql
-
-CREATE MATERIALIZED VIEW patent_citation_summary_mv AS
-SELECT *
-FROM patent_citations 
-LIMIT 5000;
+CREATE MATERIALIZED VIEW patent_citation_summary_1M_mv AS
+SELECT * FROM patent_citation_summary_1M ;
 
 ```
-<img width="424" height="271" alt="Screenshot 2026-07-27 at 6 22 39 PM" src="https://github.com/user-attachments/assets/765510c1-dbb9-43e0-91d9-f8f1fecafd20" />
 
 
 ---
