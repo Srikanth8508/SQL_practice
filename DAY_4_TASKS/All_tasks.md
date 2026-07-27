@@ -196,27 +196,19 @@ PostgreSQL solves this using a **Recursive CTE**.
 ## Recursive Query
 
 ```sql
+
 WITH RECURSIVE hierarchy AS
 (
-    -- Start with multiple patents
     SELECT
-        p.publication_number AS root_patent,
+        pc.citing_publication_number AS root_patent,
         pc.cited_publication_number,
         1 AS depth,
-        p.publication_number || ' -> ' || pc.cited_publication_number AS path
-    FROM
-    (
-        SELECT publication_number
-        FROM patent_training
-        ORDER BY publication_number
-        LIMIT 3
-    ) p
-    JOIN patent_citations pc
-      ON pc.citing_publication_number = p.publication_number
+        pc.citing_publication_number || ' -> ' || pc.cited_publication_number AS path
+    FROM patent_citations pc
+    WHERE pc.citing_publication_number = 'US0000843595'   -- Input patent
 
     UNION ALL
 
-    -- Continue recursion
     SELECT
         h.root_patent,
         pc.cited_publication_number,
@@ -226,17 +218,18 @@ WITH RECURSIVE hierarchy AS
     JOIN patent_citations pc
       ON pc.citing_publication_number = h.cited_publication_number
     WHERE h.depth < 3
+
 )
 SELECT
     root_patent,
     depth,
     path
 FROM hierarchy
-ORDER BY root_patent, depth, path
+ORDER BY depth, path
 LIMIT 150 ;
 ```
 
-<img width="681" height="960" alt="Screenshot 2026-07-27 at 1 45 37 PM" src="https://github.com/user-attachments/assets/b828217d-aff5-4f2e-b484-c1635e305ea2" />
+<img width="656" height="749" alt="Screenshot 2026-07-27 at 9 11 33 PM" src="https://github.com/user-attachments/assets/c6b86fd6-7e62-4a6e-a85b-387443e6d450" />
 
 ---
 
