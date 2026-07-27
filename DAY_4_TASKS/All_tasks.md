@@ -264,14 +264,14 @@ WITH RECURSIVE citation_tree AS
     FROM citation_tree ct
     JOIN patent_citations pc
       ON pc.citing_publication_number = ct.cited_publication_number
+    WHERE ct.depth < 10
 )
 SELECT *
 FROM citation_tree;
 
 ```
 
-<img width="579" height="492" alt="Screenshot 2026-07-24 at 6 28 25 PM" src="https://github.com/user-attachments/assets/298d5981-ebfb-4186-b2b6-c2e4e806e9bd" />
-
+![Uploading Screenshot 2026-07-27 at 12.09.42 PM.png…]()
 
 ---
 
@@ -335,7 +335,8 @@ RETURNS TABLE
     depth INT
 )
 LANGUAGE SQL
-AS $$
+AS
+$$
 WITH RECURSIVE hierarchy AS
 (
     SELECT
@@ -344,23 +345,22 @@ WITH RECURSIVE hierarchy AS
     FROM patent_citations
     WHERE citing_publication_number = patent_no
 
-    UNION ALL
+    UNION
 
     SELECT
         pc.cited_publication_number,
         h.depth + 1
     FROM hierarchy h
     JOIN patent_citations pc
-      ON h.cited_publication_number = pc.citing_publication_number
+      ON pc.citing_publication_number = h.cited_publication_number
+    WHERE h.depth < 10
 )
 SELECT
     cited_publication_number,
     depth
 FROM hierarchy;
 $$;
-
 ```
-<img width="723" height="595" alt="Screenshot 2026-07-24 at 6 32 39 PM" src="https://github.com/user-attachments/assets/d394a050-25b7-42cb-9ad5-a9cd70cb6eed" />
 
 ---
 
@@ -370,7 +370,7 @@ $$;
 SELECT *
 FROM get_patent_citation_hierarchy('US0001234567');
 ```
-<img width="454" height="123" alt="Screenshot 2026-07-24 at 6 36 13 PM" src="https://github.com/user-attachments/assets/52a75313-ee32-4274-a52b-5edfc1ea7a26" />
+<img width="439" height="122" alt="Screenshot 2026-07-27 at 12 11 44 PM" src="https://github.com/user-attachments/assets/85cc64e4-95bd-4593-9b08-da2fb3b1abb4" />
 
 ---
 
@@ -385,12 +385,21 @@ SELECT
     p.publication_number,
     c.cited_patent,
     c.depth
-FROM patent_training p
+FROM
+(
+    SELECT publication_number
+    FROM patent_training
+    LIMIT 3
+) p
 CROSS JOIN LATERAL
-    get_patent_citation_hierarchy(p.publication_number) c
-LIMIT 100;
+(
+    SELECT *
+    FROM get_patent_citation_hierarchy(p.publication_number)
+    LIMIT 10
+) c;
 
 ```
+<img width="510" height="875" alt="Screenshot 2026-07-27 at 12 30 19 PM" src="https://github.com/user-attachments/assets/7511a19a-794c-4163-aeac-b0b1d3515fc8" />
 
 ---
 
