@@ -327,7 +327,7 @@ $$;
 ## Execute Function
 
 ```sql
-SELECT * FROM get_patent_citation_hierarchy('US0000058066');
+SELECT * FROM get_patent_citation_paths('US0000058066');
 ```
 <img width="733" height="898" alt="Screenshot 2026-07-27 at 6 15 16 PM" src="https://github.com/user-attachments/assets/43f0a3af-b2d7-45da-9662-971ae89f88ff" />
 
