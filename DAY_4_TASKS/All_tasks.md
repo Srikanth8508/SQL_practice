@@ -450,23 +450,4 @@ SELECT * FROM patent_citation_summary_1m_mv WHERE citing_publication_number = 'U
 ```
 <img width="939" height="195" alt="Screenshot 2026-07-28 at 11 08 20 AM" src="https://github.com/user-attachments/assets/b2a86c37-c360-4abe-be59-687d188f2fdb" />
 
-
----
-
-# Summary of PostgreSQL Concepts Covered
-
-| Concept                                | Purpose                                          |
-| -------------------------------------- | ------------------------------------------------ |
-| Foreign Keys                           | Maintain valid citation relationships            |
-| Composite Primary Key                  | Prevent duplicate citations                      |
-| B-tree Index                           | Speed up citation lookups                        |
-| CROSS JOIN LATERAL                     | Execute a subquery/function for each row         |
-| Recursive CTE                          | Traverse citation hierarchies of unlimited depth |
-| SQL Function                           | Reuse recursive hierarchy logic                  |
-| View                                   | Dynamic query executed on demand                 |
-| Materialized View                      | Persisted query results for faster reads         |
-| EXPLAIN ANALYZE                        | Measure execution performance                    |
-| REFRESH MATERIALIZED VIEW              | Synchronize materialized data with base tables   |
-| REFRESH MATERIALIZED VIEW CONCURRENTLY | Refresh without blocking read operations         |
-
 ---
