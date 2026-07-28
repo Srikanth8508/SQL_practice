@@ -490,6 +490,7 @@ FROM patent_training p
 LIMIT 100;
 
 ```
+<img width="1521" height="702" alt="Screenshot 2026-07-28 at 10 49 31 AM" src="https://github.com/user-attachments/assets/a486dc43-e2db-445b-8b93-6e92dafac98f" />
 
 ---
 
@@ -498,9 +499,10 @@ LIMIT 100;
 ```sql
 EXPLAIN ANALYZE
 SELECT *
-FROM patent_citation_summary_1M
+FROM patent_citation_summary_1m
 LIMIT 100;
 ```
+<img width="1418" height="426" alt="Screenshot 2026-07-28 at 10 49 48 AM" src="https://github.com/user-attachments/assets/c957cc1f-059f-472f-99bc-6ea29e347fc4" />
 
 ---
 
@@ -509,19 +511,20 @@ LIMIT 100;
 ```sql
 EXPLAIN ANALYZE
 SELECT *
-FROM patent_citation_summary_1M_mv
+FROM patent_citation_summary_1m_mv
 LIMIT 100;
 ```
+<img width="1113" height="243" alt="Screenshot 2026-07-28 at 10 49 54 AM" src="https://github.com/user-attachments/assets/15c0da57-9f22-4976-89ab-3d6b595a53da" />
 
 ---
 
-## Expected Performance
+## Performance
 
-| Method            | Query Execution         | Storage | Expected Speed          |
-| ----------------- | ----------------------- | ------- | ----------------------- |
-| Direct Query      | Executes SQL every time | No      | Slowest                 |
-| View              | Executes SQL every time | No      | Similar to Direct Query |
-| Materialized View | Reads precomputed data  | Yes     | Fastest                 |
+| Query             | Execution Time |
+| ----------------- | -------------: |
+| Materialized View |   **2.237 ms** |
+| Direct Query      | **297.350 ms** |
+| View              | **474.702 ms** |
 
 ---
 
@@ -530,29 +533,24 @@ LIMIT 100;
 Insert a new citation.
 
 ```sql
-INSERT INTO patent_citations
-(
-    citing_publication_number,
-    cited_publication_number
-)
-VALUES
-(
-    'US0000000001',
-    'US9999999999'
-);
+INSERT INTO patent_training (publication_number, inventor_name, publication_date, title, abstract)
+VALUES ('US0001000001', 'John Doe', CURRENT_DATE, 'New Patent Title', 'Sample Abstract');
+
+INSERT INTO patent_citations (citing_publication_number, cited_publication_number)
+VALUES ('US0001000001', 'US0001000000');
 
 ```
+
+<img width="876" height="146" alt="Screenshot 2026-07-28 at 11 02 12 AM" src="https://github.com/user-attachments/assets/66b628c1-1991-419b-87f1-798e42280c35" />
 
 ---
 
 ## Query the View
 
 ```sql
-SELECT *
-FROM patent_citation_summary_demo
-WHERE publication_number = 'US0000000001';
-
+SELECT * FROM patent_citation_summary_1m WHERE publication_number = 'US0001000001';
 ```
+<img width="926" height="121" alt="Screenshot 2026-07-28 at 11 02 40 AM" src="https://github.com/user-attachments/assets/707bcd0d-c2d3-4894-9f18-893420e7ff13" />
 
 Result:
 
@@ -563,10 +561,10 @@ Result:
 ## Query the Materialized View
 
 ```sql
-SELECT *
-FROM patent_citation_summary_mv
-WHERE publication_number = 'US0000000001';
+SELECT * FROM patent_citation_summary_1m_mv WHERE publication_number = 'US0001000001';
 ```
+<img width="933" height="115" alt="Screenshot 2026-07-28 at 11 02 49 AM" src="https://github.com/user-attachments/assets/6352648b-be50-4792-8960-77eea17533cf" />
+
 
 Result:
 
@@ -577,9 +575,8 @@ Result:
 # Refresh Materialized View
 
 ```sql
-REFRESH MATERIALIZED VIEW patent_citation_summary_mv;
+REFRESH MATERIALIZED VIEW patent_citation_summary_1m_mv;
 ```
-
 ---
 
 ## Concurrent Refresh
@@ -587,6 +584,12 @@ REFRESH MATERIALIZED VIEW patent_citation_summary_mv;
 ```sql
 REFRESH MATERIALIZED VIEW CONCURRENTLY patent_citation_summary_mv;
 ```
+## Query the Materialized View again 
+
+```sql
+SELECT * FROM patent_citation_summary_1m_mv WHERE citing_publication_number = 'US0001000001';
+```
+<img width="939" height="195" alt="Screenshot 2026-07-28 at 11 08 20 AM" src="https://github.com/user-attachments/assets/b2a86c37-c360-4abe-be59-687d188f2fdb" />
 
 ### Technical Explanation
 
