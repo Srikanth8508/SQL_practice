@@ -57,18 +57,6 @@ ON patent_citations(cited_publication_number);
 
 # Step 2 - Generate Citation Data
 
-Each patent should cite **1–5 older patents**.
-
-## Technical Explanation
-
-To avoid invalid future citations:
-
-1. Sort patents by publication date.
-2. Assign each patent a row number.
-3. Allow citations only to patents with a smaller row number.
-
-This guarantees that every citation points to an older patent.
-
 ---
 
 ## Create Ordered Patent List
@@ -133,19 +121,6 @@ WHERE p.rn > 1;
 
 ---
 
-## Why CROSS JOIN LATERAL?
-
-`LATERAL` executes the inner query once for every row in the outer query.
-
-For every patent:
-
-* Pick 1–5 random older patents.
-* Insert those citations.
-
-Without `LATERAL`, the same random patents would be selected for every row.
-
----
-
 # Step 3 - Verify Citation Data
 
 ```sql
@@ -158,41 +133,7 @@ SELECT * FROM patent_citations LIMIT 20;
 
 # Step 4 - Retrieve Citation Hierarchy
 
-Example hierarchy:
-
-```
-Patent A
-│
-├── Patent B
-│      │
-│      └── Patent D
-│
-└── Patent C
-       │
-       └── Patent E
-```
-
-Expected output
-
-| Patent | Depth |
-| ------ | ----: |
-| B      |     1 |
-| C      |     1 |
-| D      |     2 |
-| E      |     2 |
-
 ---
-
-## Technical Explanation
-
-A patent can cite another patent, which itself cites older patents.
-
-This forms a **recursive hierarchy (tree/graph)**.
-
-PostgreSQL solves this using a **Recursive CTE**.
-
----
-
 ## Recursive Query
 
 ```sql
@@ -233,55 +174,7 @@ LIMIT 150 ;
 
 ---
 
-## How Recursive CTE Works
-
-### Anchor Query
-
-Returns direct citations.
-
-```
-Patent A
-    ↓
-Patent B
-Patent C
-```
-
-Depth = 1
-
----
-
-### Recursive Query
-
-Uses previous results to continue searching.
-
-```
-Patent B
-    ↓
-Patent D
-
-Patent C
-    ↓
-Patent E
-```
-
-Depth = 2
-
-The recursion stops automatically when no more cited patents are found.
-
----
-
 # Step 5 - Create Database Function
-
-## Technical Explanation
-
-Instead of writing the recursive query repeatedly, encapsulate it inside a reusable SQL function.
-
-Benefits:
-
-* Reusable
-* Easier maintenance
-* Cleaner SQL
-* Can be called for one or many patents
 
 ---
 
@@ -374,23 +267,6 @@ The view should contain:
 
 ---
 
-## Technical Explanation
-
-A View stores only the SQL definition.
-
-Whenever queried, PostgreSQL executes the underlying query again.
-
-Advantages:
-
-* Always up-to-date
-* No extra storage
-
-Disadvantages:
-
-* Slower for expensive recursive queries
-
----
-
 ```sql
 
 CREATE VIEW patent_citation_summary_1M AS
@@ -425,29 +301,12 @@ FROM
 
 # Step 8 - Create Materialized View
 
-## Technical Explanation
-
-Unlike a View, a Materialized View stores the query result physically on disk.
-
-Advantages
-
-* Much faster reads
-* Suitable for reporting
-* Avoids repeated recursive computation
-
-Disadvantages
-
-* Data becomes stale until refreshed
-
----
-
 ```sql
 CREATE MATERIALIZED VIEW patent_citation_summary_1M_mv AS
 SELECT * FROM patent_citation_summary_1M ;
 
 ```
 <img width="871" height="412" alt="Screenshot 2026-07-27 at 8 32 02 PM" src="https://github.com/user-attachments/assets/2965d2e9-3150-4076-9c6b-7b6c21d1ae7a" />
-
 
 ---
 
@@ -591,15 +450,6 @@ SELECT * FROM patent_citation_summary_1m_mv WHERE citing_publication_number = 'U
 ```
 <img width="939" height="195" alt="Screenshot 2026-07-28 at 11 08 20 AM" src="https://github.com/user-attachments/assets/b2a86c37-c360-4abe-be59-687d188f2fdb" />
 
-### Technical Explanation
-
-A normal refresh locks the materialized view while rebuilding it.
-
-A concurrent refresh:
-
-* Keeps the materialized view readable during refresh.
-* Requires a UNIQUE INDEX on the materialized view.
-* Is recommended for production environments.
 
 ---
 
