@@ -1,6 +1,3 @@
-Yes. Based on the job flow diagram, we can prepare a document that explains **what each Job (.kjb) and Transformation (.ktr) is responsible for** without going into the PostgreSQL functions yet.
-
----
 
 # Client Portal Incremental ETL – Job Flow
 
